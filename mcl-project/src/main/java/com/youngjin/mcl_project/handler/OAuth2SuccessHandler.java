@@ -1,12 +1,13 @@
 package com.youngjin.mcl_project.handler;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import com.youngjin.mcl_project.jwt.TokenProvider;
-import com.youngjin.mcl_project.service.CustomOAuth2UserService; // providerId 추출을 위해 CustomUserService 로직 필요
-import com.youngjin.mcl_project.dto.OAuth2UserInfo; // 정보 추출을 위해 필요
 import com.youngjin.mcl_project.dto.KakaoUserInfo;
 import com.youngjin.mcl_project.dto.NaverUserInfo;
+import com.youngjin.mcl_project.dto.OAuth2UserInfo;
+import com.youngjin.mcl_project.jwt.TokenProvider;
+import com.youngjin.mcl_project.service.MemberService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -15,9 +16,9 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationSu
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 @Slf4j
@@ -26,43 +27,61 @@ import java.util.Map;
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final TokenProvider tokenProvider;
-
-    // ⭐️ 프론트엔드 리다이렉트 URL (React 개발 서버 주소)
-    // 이 URL로 JWT 토큰이 쿼리 파라미터로 전달됩니다. React에서 이 토큰을 받아서 저장해야 합니다.
-    private final String TARGET_URL = "http://localhost:5173/oauth/redirect";
-    // TODO: React 프로젝트 시작 후 실제 URL로 변경해 주세요.
+    private final MemberService memberService;
+    private final String TARGET_URL = "http://localhost:5173";
+    // TODO: React 실제 URL.
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
 
-        // 1. 필요한 정보 추출 (기존 코드 유지)
+        // 1. 사용자 정보 추출
         String registrationId = getRegistrationId(request);
         OAuth2UserInfo userInfo = getOAuth2UserInfo(registrationId, oAuth2User.getAttributes());
-
         String providerId = userInfo.getProviderId();
-        String role = "ROLE_USER";
 
-        // ⭐ ⭐ ⭐ 수정이 필요한 부분 시작 ⭐ ⭐ ⭐
-        String nickname = userInfo.getNickname();
+        // 2. DB에서 저장된 MemberEntity를 조회하여 grade를 가져옴
+        long userGrade = memberService.getGradeByProviderId(providerId);
 
-        // 2. 닉네임을 URL 안전하게 인코딩
-        // 자바 10 이상: StandardCharsets.UTF_8 사용
-        String encodedNickname = URLEncoder.encode(nickname, StandardCharsets.UTF_8.toString());
+        // 3. 토큰 생성
+        String accessToken = tokenProvider.createAccessToken(providerId, userGrade); // ⭐️ grade 사용
+        String refreshToken = tokenProvider.createRefreshToken(providerId);
 
-        // 3. JWT 토큰 생성 (기존 코드 유지)
-        String token = tokenProvider.createToken(providerId, role);
+        // 4. 쿠키에 토큰 담기 (HttpOnly, Secure)
+        // Access Token 쿠키 생성 (짧은 유효 기간)
+        addCookie(response, "accessToken", accessToken, 3600); // 1시간 (Access Token 만료 시간과 일치시킴)
 
-        // 4. 토큰과 인코딩된 닉네임을 쿼리 파라미터에 담아 프론트엔드로 리다이렉트
+        // Refresh Token 쿠키 생성 (긴 유효 기간)
+        addCookie(response, "refreshToken", refreshToken, 604800); // 7일
+
+        // 5. 닉네임을 URL에 담아 전달 (HttpOnly가 아니므로 쿼리나 별도 쿠키/헤더로 전달 가능)
+        String encodedNickname = URLEncoder.encode(userInfo.getNickname(), StandardCharsets.UTF_8.toString());
+
         String targetUri = UriComponentsBuilder.fromUriString(TARGET_URL)
-                .queryParam("token", token)
-                .queryParam("nickname", encodedNickname) // ⭐ 인코딩된 닉네임 변수 사용
+                .queryParam("nickname", encodedNickname)
                 .build().toUriString();
 
-        // ⭐ ⭐ ⭐ 수정이 필요한 부분 끝 ⭐ ⭐ ⭐
-
-        log.info("JWT 토큰 발급 및 리다이렉트: {}", targetUri);
+        log.info("JWT 토큰 쿠키 발급 및 리다이렉트: {}", targetUri);
         getRedirectStrategy().sendRedirect(request, response, targetUri);
+    }
+
+    // ⭐️ HttpOnly 쿠키를 생성하는 헬퍼 메서드
+    private void addCookie(HttpServletResponse response, String name, String value, int maxAge) {
+        Cookie cookie = new Cookie(name, value);
+        cookie.setPath("/");
+        cookie.setHttpOnly(true);
+        // 🚨 로컬 환경에서 SameSite=None, Secure 대신 아래의 설정을 사용하여 전송 시도
+        // (일부 브라우저에서 SameSite=None 및 Set-Cookie 헤더를 사용할 때 문제가 생길 수 있어,
+        // 기본 Cookie 객체를 사용하고 SameSite 설정을 제거해 봅니다.)
+
+        // 🚨 Domain 설정은 로컬에서는 사용하지 않습니다.
+        // cookie.setDomain("localhost"); // 로컬에서 사용 시 문제 발생 가능성 높음
+
+        cookie.setMaxAge(maxAge);
+
+        // ⭐️ 응답 헤더에 SameSite=Lax (기본값) 또는 명시적인 설정을 추가할 수 있지만,
+        // 현재는 최대한 심플하게 쿠키 객체만 추가해 봅니다.
+        response.addCookie(cookie);
     }
 
     // 💡 수정된 헬퍼 메서드: request를 매개변수로 받도록 변경

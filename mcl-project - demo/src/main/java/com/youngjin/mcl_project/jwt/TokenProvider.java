@@ -24,60 +24,31 @@ import java.util.stream.Collectors;
 public class TokenProvider {
 
     private final Key key;
+    // 토큰 유효 기간: 24시간 (1000ms * 60초 * 60분 * 24시간)
+    private final long tokenValidityInMilliseconds = 1000L * 60 * 60 * 24;
 
-    private final long accessTokenValidityInMilliseconds;
-    private final long refreshTokenValidityInMilliseconds;
-
-    public TokenProvider(
-            @Value("${jwt.secret}") String secretKey,
-            @Value("${jwt.access-token-validity-in-seconds}") long accessValidity,
-            @Value("${jwt.refresh-token-validity-in-seconds}") long refreshValidity
-    ) {
+    public TokenProvider(@Value("${jwt.secret}") String secretKey) {
+        // application.yml에서 주입받은 secret key를 Base64 디코딩하여 Key 객체 생성
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);
-
-        // 밀리초 단위 ( *1000 )
-        this.accessTokenValidityInMilliseconds = accessValidity * 1000L;
-        this.refreshTokenValidityInMilliseconds = refreshValidity * 1000L;
     }
 
     /**
-     * Access Token 생성: Provider ID와 사용자 등급(grade) 기반
+     * Provider ID와 권한 정보를 기반으로 Access Token을 생성합니다.
+     * @param providerId 소셜 서비스에서 제공하는 사용자 고유 ID (식별 키)
+     * @param role 사용자 권한 (예: ROLE_USER)
+     * @return 생성된 JWT 문자열
      */
-    public String createAccessToken(String providerId, long grade) {
-        String role = getRoleFromGrade(grade); // 등급으로 권한 부여
+    public String createToken(String providerId, String role) {
         long now = (new Date()).getTime();
-        Date validity = new Date(now + this.accessTokenValidityInMilliseconds);
+        Date validity = new Date(now + this.tokenValidityInMilliseconds);
 
         return Jwts.builder()
-                .setSubject(providerId)
-                .claim("role", role)
-                .signWith(key, SignatureAlgorithm.HS512)
-                .setExpiration(validity)
+                .setSubject(providerId) // 토큰 주체: providerId 사용
+                .claim("role", role)     // 페이로드에 권한 정보 포함
+                .signWith(key, SignatureAlgorithm.HS512) // HMAC SHA-512 서명
+                .setExpiration(validity) // 만료 시간
                 .compact();
-    }
-
-    /**
-     * Refresh Token 생성: Provider ID 기반 (만료 시간만 길게)
-     */
-    public String createRefreshToken(String providerId) {
-        long now = (new Date()).getTime();
-        Date validity = new Date(now + this.refreshTokenValidityInMilliseconds);
-
-        return Jwts.builder()
-                .setSubject(providerId)
-                .signWith(key, SignatureAlgorithm.HS512)
-                .setExpiration(validity)
-                .compact();
-    }
-
-    // 등급에 따라 권한 문자열을 반환하는 헬퍼 메서드
-    private String getRoleFromGrade(long grade) {
-        // 등급: 1 = 일반, 9 = 관리자
-        if (grade >= 9) {
-            return "ROLE_ADMIN,ROLE_USER"; // 관리자
-        }
-        return "ROLE_USER"; // 일반 유저
     }
 
     // 토큰에서 인증 정보를 추출하는 메서드

@@ -6,5 +6,4 @@ import java.util.Optional;
 
 public interface MemberRepository extends JpaRepository<MemberEntity, Long>, MemberRepositoryCustom {
     Optional<MemberEntity> findByProviderAndProviderId(String provider, String providerId);
-    Optional<MemberEntity> findByProviderId(String providerId);
 }

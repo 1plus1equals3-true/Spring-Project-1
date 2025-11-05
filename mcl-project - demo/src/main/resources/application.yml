@@ -39,5 +39,3 @@ spring:
 jwt:
   # Base64 인코딩된 256비트 이상의 문자열 / 인증을 위해 사용
   secret: ODQtNDjtl4jtlL3jhYc77ZKp6rKo44WQMzg0ODU2NzItNDjjhY7jhY4344WP44Wj44WNW+uMleuppF3ssKjrjIBb44Wh44WT44WQ6rC444WT7ZW044WRMzg3NDIzMDg5NTnjhLE4OTA0MzfjhYfjhLTjhY3rgp/stpTjhY/jhaPjhZDjhLfsuKDjhZTjhZDjhLfsoIDrpbTjhZTjhZDjhYjrjZQ4MzIwNDc5MjAzNDg3MDI4NC00OO2XiO2UveOFhzvtkqnqsqjjhZAzODQ4NTY3Mi00OOOFjuOFjjfjhY/jhaPjhY1b64yV66mkXeywqOuMgFvjhaHjhZPjhZDqsLjjhZPtlbTjhZEzODc0MjMwODk1OeOEsTg5MDQzN+OFh+OEtOOFjeuCn+y2lOOFj+OFo+OFkOOEt+y4oOOFlOOFkOOEt+yggOultOOFlOOFkOOFiOuNlDgzMjA0NzkyMDM0ODcwMg==
-  access-token-validity-in-seconds: 3600 # 1시간
-  refresh-token-validity-in-seconds: 604800 # 7일
