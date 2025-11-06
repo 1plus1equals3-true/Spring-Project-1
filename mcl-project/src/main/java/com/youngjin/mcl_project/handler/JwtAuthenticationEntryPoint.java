@@ -16,6 +16,10 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
+
+        response.setHeader("Access-Control-Allow-Origin", "https://localhost:5173"); // ⭐️ Origin 명시
+        response.setHeader("Access-Control-Allow-Credentials", "true"); // ⭐️ 자격 증명 허용
+
         // 유효한 자격증명(Access Token)이 없을 때 401 Unauthorized 응답을 반환
         response.setContentType("application/json;charset=UTF-8");
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401

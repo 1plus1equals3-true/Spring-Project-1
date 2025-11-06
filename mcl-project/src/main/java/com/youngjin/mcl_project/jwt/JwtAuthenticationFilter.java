@@ -2,6 +2,7 @@ package com.youngjin.mcl_project.jwt;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -46,12 +47,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    // HTTP 요청 헤더에서 JWT 토큰을 추출하는 헬퍼 메서드
     private String resolveToken(HttpServletRequest request) {
+        // 1. 헤더에서 Bearer 토큰 추출 (기존 로직)
         String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_PREFIX)) {
             return bearerToken.substring(BEARER_PREFIX.length());
         }
+
+        // ⭐️ 2. 쿠키에서 Access Token 추출 로직 추가
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("accessToken".equals(cookie.getName())) { // 쿠키 이름이 "accessToken"인 경우
+                    return cookie.getValue();
+                }
+            }
+        }
+
         return null;
     }
 }

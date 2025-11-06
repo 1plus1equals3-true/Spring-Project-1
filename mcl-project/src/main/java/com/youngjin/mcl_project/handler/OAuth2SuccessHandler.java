@@ -5,7 +5,6 @@ import com.youngjin.mcl_project.dto.NaverUserInfo;
 import com.youngjin.mcl_project.dto.OAuth2UserInfo;
 import com.youngjin.mcl_project.jwt.TokenProvider;
 import com.youngjin.mcl_project.service.MemberService;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +27,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
     private final TokenProvider tokenProvider;
     private final MemberService memberService;
-    private final String TARGET_URL = "http://localhost:5173";
+    // private final String TARGET_URL = "http://localhost:5173";
+    private final String TARGET_URL = "https://localhost:5173";
     // TODO: React 실제 URL.
 
     @Override
@@ -46,6 +46,9 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         // 3. 토큰 생성
         String accessToken = tokenProvider.createAccessToken(providerId, userGrade); // ⭐️ grade 사용
         String refreshToken = tokenProvider.createRefreshToken(providerId);
+
+        // ⭐️ 4. MemberService를 통해 Refresh Token을 DB에 저장/업데이트
+        memberService.updateRefreshToken(providerId, refreshToken);
 
         // 4. 쿠키에 토큰 담기 (HttpOnly, Secure)
         // Access Token 쿠키 생성 (짧은 유효 기간)
@@ -67,21 +70,12 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
     // ⭐️ HttpOnly 쿠키를 생성하는 헬퍼 메서드
     private void addCookie(HttpServletResponse response, String name, String value, int maxAge) {
-        Cookie cookie = new Cookie(name, value);
-        cookie.setPath("/");
-        cookie.setHttpOnly(true);
-        // 🚨 로컬 환경에서 SameSite=None, Secure 대신 아래의 설정을 사용하여 전송 시도
-        // (일부 브라우저에서 SameSite=None 및 Set-Cookie 헤더를 사용할 때 문제가 생길 수 있어,
-        // 기본 Cookie 객체를 사용하고 SameSite 설정을 제거해 봅니다.)
-
-        // 🚨 Domain 설정은 로컬에서는 사용하지 않습니다.
-        // cookie.setDomain("localhost"); // 로컬에서 사용 시 문제 발생 가능성 높음
-
-        cookie.setMaxAge(maxAge);
-
-        // ⭐️ 응답 헤더에 SameSite=Lax (기본값) 또는 명시적인 설정을 추가할 수 있지만,
-        // 현재는 최대한 심플하게 쿠키 객체만 추가해 봅니다.
-        response.addCookie(cookie);
+        // ⭐️ Secure 속성을 다시 포함합니다.
+        String cookieHeader = String.format("%s=%s; Max-Age=%d; Path=/; HttpOnly; SameSite=None; Secure",
+                name,
+                value,
+                maxAge);
+        response.addHeader("Set-Cookie", cookieHeader);
     }
 
     // 💡 수정된 헬퍼 메서드: request를 매개변수로 받도록 변경

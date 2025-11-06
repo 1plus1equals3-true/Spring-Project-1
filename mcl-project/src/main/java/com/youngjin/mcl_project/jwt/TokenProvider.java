@@ -24,21 +24,29 @@ import java.util.stream.Collectors;
 public class TokenProvider {
 
     private final Key key;
-
     private final long accessTokenValidityInMilliseconds;
     private final long refreshTokenValidityInMilliseconds;
+    private final long refreshValidityInSeconds;
 
+    // 생성자를 통해 모든 값을 @Value로 주입받도록 강제
     public TokenProvider(
             @Value("${jwt.secret}") String secretKey,
-            @Value("${jwt.access-token-validity-in-seconds}") long accessValidity,
-            @Value("${jwt.refresh-token-validity-in-seconds}") long refreshValidity
+            @Value("${jwt.access-token-validity-in-seconds:10}") long accessValidityInSeconds,
+            // *** 키 이름 변경 및 기본값 설정 ***
+            @Value("${jwt.refresh-token-validity-in-days:7}") long refreshValidityInDays
     ) {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);
 
-        // 밀리초 단위 ( *1000 )
-        this.accessTokenValidityInMilliseconds = accessValidity * 1000L;
-        this.refreshTokenValidityInMilliseconds = refreshValidity * 1000L;
+        // Access Token (초를 밀리초로)
+        this.accessTokenValidityInMilliseconds = accessValidityInSeconds * 1000L;
+
+        // Refresh Token (일을 초로 변환한 후 밀리초로)
+        this.refreshValidityInSeconds = refreshValidityInDays * 24 * 60 * 60; // 7일 * 24시간 * 60분 * 60초
+        this.refreshTokenValidityInMilliseconds = this.refreshValidityInSeconds * 1000L;
+
+        // 최종적으로 계산된 값 로그 출력
+        log.info("Refresh Token Validity: {} seconds", this.refreshValidityInSeconds);
     }
 
     /**
@@ -69,6 +77,16 @@ public class TokenProvider {
                 .signWith(key, SignatureAlgorithm.HS512)
                 .setExpiration(validity)
                 .compact();
+    }
+
+    // 토큰에서 Subject (providerId)만 추출하는 메서드
+    public String getSubject(String token) {
+        try {
+            return Jwts.parser().setSigningKey(key).build().parseClaimsJws(token).getBody().getSubject();
+        } catch (Exception e) {
+            // 파싱 실패 또는 만료 시 null 반환 또는 예외 처리
+            return null;
+        }
     }
 
     // 등급에 따라 권한 문자열을 반환하는 헬퍼 메서드

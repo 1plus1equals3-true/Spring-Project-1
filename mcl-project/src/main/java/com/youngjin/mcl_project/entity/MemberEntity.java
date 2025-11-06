@@ -40,6 +40,13 @@ public class MemberEntity {
     @Column(name = "provider_id")
     private String providerId;
 
+    @Column(name = "refresh_token")
+    private String refreshToken;
+
+    public void updateRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
+    }
+
     @Builder
     public MemberEntity(String nickname, String provider, String providerId) {
         this.nickname = nickname;

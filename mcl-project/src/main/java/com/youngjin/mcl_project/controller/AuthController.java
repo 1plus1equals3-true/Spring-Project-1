@@ -2,18 +2,22 @@ package com.youngjin.mcl_project.controller;
 
 // Spring MVC 및 Core
 
+import com.youngjin.mcl_project.entity.MemberEntity;
 import com.youngjin.mcl_project.jwt.TokenProvider;
 import com.youngjin.mcl_project.service.MemberService;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Optional;
+
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
@@ -28,38 +32,56 @@ public class AuthController {
             @CookieValue(name = "refreshToken", required = false) String refreshToken,
             HttpServletResponse response) {
 
-        if (refreshToken == null || !tokenProvider.validateToken(refreshToken)) {
-            return new ResponseEntity<>("Refresh Token이 유효하지 않거나 없습니다.", HttpStatus.UNAUTHORIZED);
+        if (refreshToken == null) {
+            return new ResponseEntity<>("Refresh Token이 없습니다.", HttpStatus.UNAUTHORIZED);
+        }
+
+        // 1. Refresh Token 자체의 유효성 검사 (서명, 만료 여부)
+        if (!tokenProvider.validateToken(refreshToken)) {
+            // 만료되었다면 401 반환 (재로그인 유도)
+            return new ResponseEntity<>("만료되거나 잘못된 Refresh Token입니다.", HttpStatus.UNAUTHORIZED);
+        }
+
+        // ⭐️ 2. DB에 저장된 Refresh Token과 일치하는지 확인 (가장 중요한 보안 검증)
+        // MemberService에서 Refresh Token으로 회원 엔티티를 찾음
+        Optional<MemberEntity> memberOptional = memberService.findByRefreshToken(refreshToken);
+
+        if (memberOptional.isEmpty()) {
+            // DB에 없으면 유효하지 않은 토큰 (탈취, 이미 재발급되어 폐기된 토큰 등)
+            return new ResponseEntity<>("DB에 저장되지 않은 Refresh Token입니다.", HttpStatus.UNAUTHORIZED);
         }
 
         try {
-            // 1. Refresh Token에서 Subject (providerId) 추출
-            String providerId = tokenProvider.getAuthentication(refreshToken).getName();
-
-            // 2. DB에서 사용자 grade 조회
-            long userGrade = memberService.getGradeByProviderId(providerId);
+            MemberEntity member = memberOptional.get();
+            String providerId = member.getProviderId(); // DB에서 providerId를 가져오는 것이 더 확실
 
             // 3. 새 Access Token 생성
+            long userGrade = member.getGrade(); // DB에서 grade 조회
             String newAccessToken = tokenProvider.createAccessToken(providerId, userGrade);
 
-            // 4. 새 Access Token을 쿠키에 담아 반환 (기존 쿠키 덮어쓰기)
-            // Access Token 만료 시간(1시간)을 maxAge로 설정
-            int accessTokenMaxAge = 3600;
-            Cookie newAccessCookie = new Cookie("accessToken", newAccessToken);
-            newAccessCookie.setPath("/");
-            newAccessCookie.setHttpOnly(true);
-            newAccessCookie.setMaxAge(accessTokenMaxAge);
+            // ⭐️ 4. (보안 강화) 새 Refresh Token 발급 및 DB 업데이트 (롤링 방식)
+            String newRefreshToken = tokenProvider.createRefreshToken(providerId);
+            memberService.updateRefreshToken(providerId, newRefreshToken);
 
-            // ⭐️ 쿠키 객체 직접 추가로 단순화
-            response.addCookie(newAccessCookie);
-            // 🚨 기존에 직접 추가했던 Set-Cookie 헤더 로직은 제거
+            // 5. 새 Access Token 및 Refresh Token 쿠키에 담아 반환 (기존 쿠키 덮어쓰기)
+            addCookieHeader(response, "accessToken", newAccessToken, 3600);
+            addCookieHeader(response, "refreshToken", newRefreshToken, 604800); // ⭐️ 새 Refresh Token도 쿠키에 담기
 
             return ResponseEntity.ok("Access Token이 성공적으로 재발급되었습니다.");
 
         } catch (Exception e) {
-            // 토큰 파싱 또는 DB 조회 실패 시
-            return new ResponseEntity<>("토큰 재발급에 실패했습니다.", HttpStatus.UNAUTHORIZED);
+            log.error("토큰 재발급 중 오류 발생: {}", e.getMessage());
+            return new ResponseEntity<>("토큰 재발급 처리 중 서버 오류가 발생했습니다.", HttpStatus.UNAUTHORIZED);
         }
+    }
+
+    // 💡 AuthController 내부에 쿠키 생성 헬퍼 메서드 추가 (코드 중복 방지)
+    private void addCookieHeader(HttpServletResponse response, String name, String value, int maxAge) {
+        String cookieHeader = String.format("%s=%s; Max-Age=%d; Path=/; HttpOnly; SameSite=None; Secure",
+                name,
+                value,
+                maxAge);
+        response.addHeader("Set-Cookie", cookieHeader);
     }
 
     /**
@@ -68,20 +90,12 @@ public class AuthController {
     @PostMapping("/logout")
     public ResponseEntity<String> logout(HttpServletResponse response) {
         // Access Token 쿠키 삭제 (만료 시간을 0으로 설정)
-        Cookie accessCookie = new Cookie("accessToken", "");
-        accessCookie.setHttpOnly(true);
-        accessCookie.setPath("/");
-        accessCookie.setMaxAge(0);
-        response.addCookie(accessCookie);
+        String accessCookieHeader = "accessToken=; Max-Age=0; Path=/; HttpOnly; SameSite=None; Secure"; // Secure 추가
+        response.addHeader("Set-Cookie", accessCookieHeader);
 
         // Refresh Token 쿠키 삭제 (만료 시간을 0으로 설정)
-        Cookie refreshCookie = new Cookie("refreshToken", "");
-        refreshCookie.setHttpOnly(true);
-        refreshCookie.setPath("/");
-        refreshCookie.setMaxAge(0);
-        response.addCookie(refreshCookie);
-
-        // ⭐️ 필요하다면 DB/Redis에 Refresh Token을 블랙리스트 처리하는 로직 추가
+        String refreshCookieHeader = "refreshToken=; Max-Age=0; Path=/; HttpOnly; SameSite=None; Secure"; // Secure 추가
+        response.addHeader("Set-Cookie", refreshCookieHeader);
 
         return ResponseEntity.ok("로그아웃 및 쿠키 삭제 완료");
     }

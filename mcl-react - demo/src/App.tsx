@@ -7,12 +7,13 @@ import axios, { AxiosError } from "axios";
 // 임시 컴포넌트
 const Main = () => (
   <div>
-    <h1>컬렉션 커뮤니티 메인</h1>
+    <h1>MCL</h1>
     <p>
-      환영합니다! <br /> <br />
-      -note- <br />
-      네이버 로그인, 카카오 로그인 시 토큰 생성 <br />
-      토큰 유지된 상태일 때 인증된 API 호출 버튼으로 식별번호 출력
+      -note- <br /> <br />
+      네이버 로그인, 카카오 로그인 시 JWT 토큰 생성 <br />
+      로컬스토리지 → 쿠키 httponry 속성 사용으로 변경 및 리프레시 토큰과 엑세스
+      토큰 구분하여 보안 강화 <br />
+      메인페이지와 로그인페이지 만드는중
     </p>
     <AuthButtons />
     <APITest />
