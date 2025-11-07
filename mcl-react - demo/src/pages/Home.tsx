@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 // 조합할 레이아웃 및 섹션 컴포넌트 import
 import MainLayout from "../components/layout/MainLayout";
 import PostListSection from "../components/sections/PostListSection";
 import ReviewCardSection from "../components/sections/ReviewCardSection";
-import apiClient from "../api/apiClient";
-
+// ⭐️ 스타일 파일은 App.tsx 또는 index.tsx에서 전역으로 import하거나,
+//    Home.tsx에서만 사용할 경우 아래처럼 import합니다.
 import "../styles/main.css";
 
 // 🚨 데이터 구조 정의 및 빈 배열로 초기화 (더미데이터 제거 요청 반영)

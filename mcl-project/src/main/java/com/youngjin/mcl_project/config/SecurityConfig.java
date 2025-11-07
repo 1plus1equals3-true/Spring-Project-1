@@ -58,6 +58,7 @@ public class SecurityConfig {
         http.authorizeHttpRequests(authorize -> authorize
                 .requestMatchers(OPTIONS, "/**").permitAll() // OPTIONS 허용
                 .requestMatchers(HttpMethod.POST, "/api/v1/auth/reissue").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/v1/auth/logout").permitAll()
                 .requestMatchers(
                         "/",
                         "/api/auth/**",

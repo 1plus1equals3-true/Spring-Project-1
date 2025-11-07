@@ -60,8 +60,9 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         // 5. 닉네임을 URL에 담아 전달 (HttpOnly가 아니므로 쿼리나 별도 쿠키/헤더로 전달 가능)
         String encodedNickname = URLEncoder.encode(userInfo.getNickname(), StandardCharsets.UTF_8.toString());
 
-        String targetUri = UriComponentsBuilder.fromUriString(TARGET_URL)
+        String targetUri = UriComponentsBuilder.fromUriString(TARGET_URL + "/oauth/callback")
                 .queryParam("nickname", encodedNickname)
+                .queryParam("token", "true")
                 .build().toUriString();
 
         log.info("JWT 토큰 쿠키 발급 및 리다이렉트: {}", targetUri);

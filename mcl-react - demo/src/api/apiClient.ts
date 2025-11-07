@@ -1,32 +1,99 @@
-// src/api/apiClient.ts (TypeScript 기준)
+// src/api/apiClient.ts (수정)
 
 import axios from "axios";
 
-// 1. 기본 Axios 인스턴스 생성
-// 백엔드 서버의 기본 URL을 설정합니다.
-const API_BASE_URL = "http://localhost:8080";
+const API_BASE_URL = "https://localhost:8443";
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
+  withCredentials: true,
 });
 
-// 2. 요청 인터셉터 설정 (가장 중요)
-apiClient.interceptors.request.use(
-  (config) => {
-    // localStorage에서 저장된 JWT 토큰을 가져옵니다.
-    const token = localStorage.getItem("accessToken");
+// 재시도 요청을 추적하기 위한 플래그
+let isRefreshing = false;
+let failedQueue: {
+  resolve: (value: any) => void;
+  reject: (reason?: any) => void;
+}[] = [];
 
-    // 토큰이 존재하면 Authorization 헤더에 Bearer 스키마를 사용하여 추가합니다.
-    if (token) {
-      config.headers["Authorization"] = `Bearer ${token}`;
+// 큐에 요청을 처리하는 함수 (토큰을 받지 않고 완료 처리)
+const processQueue = (error: any) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      // 새 쿠키가 브라우저에 설정되었으므로 바로 재시도
+      prom.resolve(true);
+    }
+  });
+  failedQueue = [];
+};
+
+// 2. 응답 인터셉터 설정 (Access Token 만료 처리)
+apiClient.interceptors.response.use(
+  (response) => response,
+  async (error: any) => {
+    const originalRequest = error.config;
+
+    // 401 Unauthorized 이고, 재시도 플래그가 설정되지 않은 요청에 대해서만 처리
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      // Access Token 만료에 대한 JSON 메시지 확인 (백엔드와 일치하는지 확인)
+      const errorMessage = error.response.data?.message;
+      if (
+        errorMessage !== "유효한 Access Token이 쿠키에 없거나 만료되었습니다."
+      ) {
+        return Promise.reject(error);
+      }
+
+      // Refreshing 중일 경우, 큐에 추가
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          // 재발급이 완료되면 원래 요청을 다시 실행하도록 큐에 넣습니다.
+          failedQueue.push({
+            resolve: () => resolve(apiClient(originalRequest)),
+            reject,
+          });
+        });
+      }
+
+      // 재발급 시작
+      isRefreshing = true;
+
+      try {
+        // 💡 Refresh Token 재발급 API 호출
+        // 백엔드가 200 OK와 새 쿠키를 반환할 것임. 응답 본문은 무시
+        const refreshResponse = await axios.post(
+          `${API_BASE_URL}/api/v1/auth/reissue`,
+          null,
+          { withCredentials: true }
+        );
+
+        // 재발급 성공 시
+        isRefreshing = false;
+        processQueue(null); // 큐에 있는 요청 처리 (새 쿠키로 재시도)
+
+        // ⭐️ 원래 요청을 재시도
+        return apiClient(originalRequest);
+      } catch (refreshError) {
+        // Refresh Token 재발급까지 실패하면 강제 로그아웃
+        isRefreshing = false;
+        processQueue(refreshError);
+
+        // 닉네임 제거 및 로그인 페이지로 강제 이동 (쿠키는 백엔드가 관리)
+        localStorage.removeItem("userNickname");
+        window.location.href = "/login"; // 로그인 페이지로 이동 유도
+
+        return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
+      }
     }
 
-    return config;
-  },
-  (error) => {
     return Promise.reject(error);
   }
 );

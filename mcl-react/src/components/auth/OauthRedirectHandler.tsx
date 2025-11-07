@@ -2,42 +2,45 @@
 
 import React, { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 const OauthRedirectHandler = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { login } = useAuth();
 
   useEffect(() => {
     // 1. URLSearchParams를 사용하여 쿼리 파라미터 파싱
-    const searchParams = new URLSearchParams(location.search); // 2. 토큰 및 닉네임 추출 (리프레시 토큰 추가)
+    const searchParams = new URLSearchParams(location.search);
 
-    const accessToken = searchParams.get("token"); // 액세스 토큰
-    const refreshToken = searchParams.get("refreshToken"); // 🔑 리프레시 토큰 추가
-    const nickname = searchParams.get("nickname"); // 백엔드에서 인코딩되어 전달됨 // 🔑 두 토큰이 모두 존재하는지 확인
+    // 2. 토큰(성공여부) 및 닉네임 추출
+    const success = searchParams.get("token");
+    const nickname = searchParams.get("nickname");
 
-    if (accessToken && refreshToken) {
-      console.log("인증 토큰 및 리프레시 토큰 발견."); // 3. 토큰들을 localStorage에 저장 (또는 쿠키/세션 스토리지 사용)
-      localStorage.setItem("accessToken", accessToken);
-      localStorage.setItem("refreshToken", refreshToken); // 🔑 리프레시 토큰 저장
-      console.log("Access/Refresh 토큰 저장 완료."); // 닉네임도 저장 (옵션)
+    if (success) {
+      console.log("소셜 로그인 성공.");
 
+      let decodedNickname = null;
       if (nickname) {
-        const decodedNickname = decodeURIComponent(nickname);
-        localStorage.setItem("userNickname", decodedNickname);
+        decodedNickname = decodeURIComponent(nickname);
         console.log("닉네임 저장 완료:", decodedNickname);
-      } // 4. 메인 페이지로 리다이렉트
+      }
 
-      // 🚨 TODO: 전역 인증 상태 관리 (Context/Redux) 로직을 여기에 추가해야 합니다.
+      // ⭐️ Context의 login 함수 호출 (닉네임 저장 및 상태 업데이트)
+      if (decodedNickname) {
+        login(decodedNickname);
+      }
+      // 4. 메인 페이지로 리다이렉트
 
       alert("로그인에 성공했습니다! 메인 페이지로 이동합니다.");
-      navigate("/", { replace: true }); // replace를 사용하여 뒤로가기 방지
+      navigate("/", { replace: true });
     } else {
       // 토큰이 부족하거나 없는 경우
       console.error("로그인 실패: 필요한 모든 토큰이 URL에 없습니다.");
       alert("소셜 로그인에 실패했습니다. 다시 시도해 주세요.");
       navigate("/login", { replace: true });
     }
-  }, [location, navigate]); // 사용자가 리다이렉트되는 동안 로딩 화면을 보여줍니다.
+  }, [location, navigate, login]); // 사용자가 리다이렉트되는 동안 로딩 화면을 보여줍니다.
 
   return (
     <div style={{ padding: "50px", textAlign: "center" }}>

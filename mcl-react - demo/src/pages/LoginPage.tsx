@@ -1,17 +1,17 @@
 // src/pages/LoginPage.tsx
-
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
-const API_BASE_URL = "https://localhost:8443";
-
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
+
   const handleSocialLogin = (provider: string) => {
-    alert("로그인 시도");
-    window.location.href = `${API_BASE_URL}/oauth2/authorization/${provider}`;
+    alert(`${provider} 소셜 로그인 API 호출 (TODO)`);
+    // 실제로는 백엔드의 OAuth2 인증 엔드포인트로 리다이렉트
+    // window.location.href = `https://localhost:8443/oauth2/authorization/${provider}`;
   };
 
+  // 이 폼은 로컬 로그인을 위한 폼이며, 나중에 API와 연결해야 합니다.
   const handleLocalLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     alert("로컬 로그인 시도 (TODO: API 연동)");
@@ -49,7 +49,7 @@ const LoginPage: React.FC = () => {
             fontWeight: "bold",
           }}
         >
-          Naver 로그인
+          N Naver로 로그인
         </button>
         <button
           onClick={() => handleSocialLogin("kakao")}
@@ -64,7 +64,7 @@ const LoginPage: React.FC = () => {
             fontWeight: "bold",
           }}
         >
-          Kakao 로그인
+          K Kakao로 로그인
         </button>
       </div>
 
