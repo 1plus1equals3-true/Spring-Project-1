@@ -3,6 +3,7 @@ package com.youngjin.mcl_project.handler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
@@ -14,10 +15,13 @@ import java.util.Map;
 @Component
 public class JwtAccessDeniedHandler implements AccessDeniedHandler {
 
+    @Value("${frontend.base-url}")
+    private String FRONT_URL;
+
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException {
 
-        response.setHeader("Access-Control-Allow-Origin", "https://localhost:5173");
+        response.setHeader("Access-Control-Allow-Origin", FRONT_URL);
         response.setHeader("Access-Control-Allow-Credentials", "true");
         // Access Token은 있지만, 해당 리소스에 접근할 권한(ROLE)이 없을 때 403 Forbidden 응답을 반환
         response.setContentType("application/json;charset=UTF-8");

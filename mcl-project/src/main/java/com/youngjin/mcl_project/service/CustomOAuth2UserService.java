@@ -15,6 +15,8 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+import java.security.SecureRandom;
+import java.util.Base64;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -75,12 +77,22 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                 })
                 .orElseGet(() -> {
                     // 신규 사용자: MemberEntity 생성
+
+                    // 소셜에서 받은 원본 닉네임
+                    String originalNickname = userInfo.getNickname();
+
+                    // 랜덤 10자리 (7바이트)
+                    String randomId = generateSecureRandomId(7);
+
+                    // 임시 닉네임 조합: "원본닉네임-RandomId" (구분자 '-'를 사용)
+                    String tempNickname = originalNickname + "-" + randomId;
+
                     return MemberEntity.builder()
-                            .userid(userInfo.getProvider() + "_" + userInfo.getProviderId()) // 임시 ID 생성
-                            .pwd("SOCIAL_LOGIN") // 소셜 로그인은 비밀번호 필요 없음
-                            .nickname(userInfo.getNickname())
+                            .userid(userInfo.getProvider() + "_" + userInfo.getProviderId())
+                            .pwd("SOCIAL_LOGIN")
+                            .nickname(tempNickname)
                             .file(userInfo.getProfileImage())
-                            .grade(1) // 기본 등급 설정
+                            .grade(1)
                             .regdate(LocalDateTime.now())
                             .provider(userInfo.getProvider())
                             .providerId(userInfo.getProviderId())
@@ -88,5 +100,15 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                 });
 
         return memberRepository.save(member);
+    }
+
+    private String generateSecureRandomId(int RANDOM_BYTE_LENGTH) {
+        SecureRandom random = new SecureRandom();
+        byte[] bytes = new byte[RANDOM_BYTE_LENGTH];
+        random.nextBytes(bytes);
+
+        String encoded = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+
+        return encoded;
     }
 }

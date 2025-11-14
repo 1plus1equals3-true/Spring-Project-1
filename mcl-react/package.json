@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "proxy": "http://localhost:8080",
+  "proxy": "http://localhost:8070",
   "scripts": {
     "dev": "vite --host",
     "release": "vite --port 8070 --host",
@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "axios": "^1.13.1",
+    "lucide-react": "^0.553.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-router-dom": "^7.9.5"

@@ -7,7 +7,7 @@ import apiClient from "../api/apiClient";
 
 import "../styles/main.css";
 
-// 🚨 데이터 구조 정의 및 빈 배열로 초기화 (더미데이터 제거 요청 반영)
+// 🚨 데이터 구조 정의 및 빈 배열로 초기화
 interface PostItem {
   id: number;
   title: string;

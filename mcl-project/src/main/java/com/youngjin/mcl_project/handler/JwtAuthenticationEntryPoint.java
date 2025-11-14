@@ -3,6 +3,7 @@ package com.youngjin.mcl_project.handler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
@@ -14,10 +15,13 @@ import java.util.Map;
 @Component
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
+    @Value("${frontend.base-url}")
+    private String FRONT_URL;
+
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
 
-        response.setHeader("Access-Control-Allow-Origin", "https://localhost:5173"); // ⭐️ Origin 명시
+        response.setHeader("Access-Control-Allow-Origin", FRONT_URL); // ⭐️ Origin 명시
         response.setHeader("Access-Control-Allow-Credentials", "true"); // ⭐️ 자격 증명 허용
 
         // 유효한 자격증명(Access Token)이 없을 때 401 Unauthorized 응답을 반환

@@ -120,6 +120,52 @@ ul li:last-child {
   text-align: center;
 }
 
+.logo {
+  color: #007bff;
+  text-decoration: none;
+}
+
+/*임시 로그인 버튼 디자인*/
+.login-button.logged-out {
+  /* 기본 스타일 */
+  display: inline-block;
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  border-radius: 5px; /* 모서리 둥글게 */
+  transition: background-color 0.3s ease, transform 0.1s ease,
+    box-shadow 0.3s ease;
+
+  /* 색상 설정 (눈에 띄는 파란색 계열) */
+  background-color: #007bff; /* 배경색 */
+  color: white; /* 텍스트 색상 */
+  border: 2px solid #0056b3; /* 테두리 */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
+}
+
+.login-button.logged-out:hover {
+  /* 마우스 오버(hover) 시 스타일 */
+  background-color: #0056b3; /* 배경색 진하게 */
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15); /* 그림자 더 강조 */
+  transform: translateY(-2px); /* 살짝 위로 이동하는 효과 */
+}
+
+.login-button.logged-out:active {
+  /* 클릭(active) 시 스타일 */
+  background-color: #004085; /* 배경색 더 진하게 */
+  transform: translateY(0); /* 원래 위치로 돌아가 누르는 효과 */
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.2); /* 그림자 약하게 */
+}
+
+/* 추가: 포커스 되었을 때의 스타일 (키보드 접근성 향상) */
+.login-button.logged-out:focus {
+  outline: none; /* 기본 포커스 윤곽선 제거 */
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.5); /* 파란색 외부 윤곽선 추가 */
+}
+
 /* ----------------------------- */
 /* 🖥️ 데스크탑 스타일 (1024px 이상) */
 /* ----------------------------- */
@@ -146,7 +192,7 @@ ul li:last-child {
   /* 1. 사이드바 스타일 */
   .sidebar {
     width: 250px; /* 사이드바 너비 */
-    margin-top: 30px;
+    margin-top: 50px;
     padding: 20px;
     flex-shrink: 0; /* 너비 고정 */
     background-color: #ffffff; /* 사이드바 배경색 */

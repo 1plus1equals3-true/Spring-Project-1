@@ -1,5 +1,6 @@
 package com.youngjin.mcl_project.service;
 
+import com.youngjin.mcl_project.dto.AuthUserResponse;
 import com.youngjin.mcl_project.entity.MemberEntity;
 import com.youngjin.mcl_project.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -41,9 +42,31 @@ public class MemberService {
         // save() 메서드를 명시적으로 호출하지 않아도 @Transactional에 의해 변경 감지(Dirty Checking)로 저장됩니다.
     }
 
+    /**
+     * ProviderId를 기반으로 사용자 정보(닉네임, 등급 등)를 조회하여 DTO로 반환
+     */
+    public AuthUserResponse getUserInfo(String providerId) {
+        Optional<MemberEntity> memberOptional = memberRepository.findByProviderId(providerId);
+
+        if (memberOptional.isEmpty()) {
+            throw new RuntimeException("User not found with providerId: " + providerId);
+        }
+
+        MemberEntity member = memberOptional.get();
+
+        // DTO를 생성하여 반환
+        return AuthUserResponse.builder()
+                .nickname(member.getNickname())
+                .grade(member.getGrade())
+                .profileImageUrl(member.getFile())
+                .build();
+    }
+
     // 💡 참고: 재발급 시 사용할 조회 메서드도 미리 추가합니다.
     @Transactional(readOnly = true)
     public Optional<MemberEntity> findByRefreshToken(String refreshToken) {
         return memberRepository.findByRefreshToken(refreshToken);
     }
+
+
 }

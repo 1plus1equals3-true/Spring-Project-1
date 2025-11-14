@@ -8,4 +8,6 @@ public interface MemberRepository extends JpaRepository<MemberEntity, Long>, Mem
     Optional<MemberEntity> findByProviderAndProviderId(String provider, String providerId);
     Optional<MemberEntity> findByProviderId(String providerId);
     Optional<MemberEntity> findByRefreshToken(String refreshToken);
+    Optional<MemberEntity> findByUserid(String userid);
+    Optional<MemberEntity> findByNickname(String nickname);
 }

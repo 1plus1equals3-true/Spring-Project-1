@@ -13,6 +13,8 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -57,6 +59,17 @@ public class SecurityConfig {
 
         http.authorizeHttpRequests(authorize -> authorize
                 .requestMatchers(OPTIONS, "/**").permitAll() // OPTIONS 허용
+                // POST /api/v1/auth/signup (회원가입)
+                .requestMatchers(HttpMethod.POST, "/api/v1/auth/signup").permitAll()
+                // POST /api/v1/auth/login (로컬 로그인)
+                .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
+                // GET /api/v1/auth/check-userid (아이디 중복 확인)
+                .requestMatchers(HttpMethod.GET, "/api/v1/auth/check-userid").permitAll()
+                // GET /api/v1/auth/check-nickname (닉네임 중복 확인)
+                .requestMatchers(HttpMethod.GET, "/api/v1/auth/check-nickname").permitAll()
+                // (토큰으로 자기 정보 호출)
+                .requestMatchers(HttpMethod.GET, "/api/v1/auth/me").permitAll()
+                // 토큰 재발급 및 로그아웃 POST 허용
                 .requestMatchers(HttpMethod.POST, "/api/v1/auth/reissue").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/auth/logout").permitAll()
                 .requestMatchers(
@@ -80,27 +93,35 @@ public class SecurityConfig {
         return http.build();
     }
 
-
-    // ⭐️ 하나만 남긴 CORS Configuration Source 빈
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // ⭐️ React 개발 서버 HTTPS 주소 허용 (쿠키 전송 허용)
+        // React 개발 서버 HTTPS 주소 허용 (쿠키 전송 허용)
         configuration.setAllowedOrigins(Arrays.asList(
+                "http://192.168.0.190:5173",
+                "https://192.168.0.190:5173",
                 "http://localhost:5173",
                 "https://localhost:5173"
         ));
 
-        // ⭐️ 쿠키 및 인증 정보 교환 허용 (이것이 401 오류 해결의 핵심)
+        // 쿠키 및 인증 정보 교환 허용
         configuration.setAllowCredentials(true);
 
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setMaxAge(3600L);
 
+        configuration.setExposedHeaders(Arrays.asList("Authorization", "Set-Cookie", "X-User-Nickname"));
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        // 보안 표준인 BCrypt 알고리즘 사용
+        return new BCryptPasswordEncoder();
     }
 }

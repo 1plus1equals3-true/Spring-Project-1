@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -27,8 +28,9 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
     private final TokenProvider tokenProvider;
     private final MemberService memberService;
-    // private final String TARGET_URL = "http://localhost:5173";
-    private final String TARGET_URL = "https://localhost:5173";
+
+    @Value("${frontend.base-url}")
+    private String TARGET_URL;
     // TODO: React 실제 URL.
 
     @Override
@@ -52,7 +54,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         // 4. 쿠키에 토큰 담기 (HttpOnly, Secure)
         // Access Token 쿠키 생성 (짧은 유효 기간)
-        addCookie(response, "accessToken", accessToken, 3600); // 1시간 (Access Token 만료 시간과 일치시킴)
+        addCookie(response, "accessToken", accessToken, 3600);
 
         // Refresh Token 쿠키 생성 (긴 유효 기간)
         addCookie(response, "refreshToken", refreshToken, 604800); // 7일
@@ -61,7 +63,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String encodedNickname = URLEncoder.encode(userInfo.getNickname(), StandardCharsets.UTF_8.toString());
 
         String targetUri = UriComponentsBuilder.fromUriString(TARGET_URL + "/oauth/callback")
-                .queryParam("nickname", encodedNickname)
+//                .queryParam("nickname", encodedNickname)
                 .queryParam("token", "true")
                 .build().toUriString();
 
