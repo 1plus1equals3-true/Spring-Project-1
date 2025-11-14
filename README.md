@@ -138,19 +138,25 @@ ENGINE=InnoDB
 ;
 
 CREATE TABLE `member` (
-	`idx` INT(11) NOT NULL AUTO_INCREMENT,
-	`userid` VARCHAR(50) NOT NULL COLLATE 'utf8mb4_uca1400_ai_ci',
-	`pwd` VARCHAR(200) NOT NULL COLLATE 'utf8mb4_uca1400_ai_ci',
-	`nickname` VARCHAR(50) NOT NULL COLLATE 'utf8mb4_uca1400_ai_ci',
+	`idx` INT NOT NULL AUTO_INCREMENT,
+	`userid` VARCHAR(50) NOT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`pwd` VARCHAR(200) NOT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`nickname` VARCHAR(50) NOT NULL COLLATE 'utf8mb4_0900_ai_ci',
 	`birth` DATE NULL DEFAULT NULL,
-	`file` VARCHAR(200) NULL DEFAULT NULL COLLATE 'utf8mb4_uca1400_ai_ci',
-	`grade` INT(11) NULL DEFAULT '1',
+	`file` VARCHAR(200) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`grade` INT NULL DEFAULT '1',
 	`regdate` DATETIME NOT NULL,
+	`provider` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`provider_id` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`refresh_token` VARCHAR(500) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
 	PRIMARY KEY (`idx`) USING BTREE,
-	UNIQUE INDEX `userid` (`userid`) USING BTREE
+	UNIQUE INDEX `userid` (`userid`) USING BTREE,
+	UNIQUE INDEX `nickname` (`nickname`) USING BTREE
 )
-COLLATE='utf8mb4_uca1400_ai_ci'
+COLLATE='utf8mb4_0900_ai_ci'
 ENGINE=InnoDB
+AUTO_INCREMENT=8
 ;
+
 
 ```
