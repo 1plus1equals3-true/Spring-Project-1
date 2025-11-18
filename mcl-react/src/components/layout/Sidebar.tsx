@@ -117,7 +117,8 @@ const Sidebar: React.FC = () => {
         <Link to="/my-collection" className="nav-item highlight">
           🚀 내 컬렉션 정리하기{" "}
         </Link>
-        <Link to="/board/free">📢 자유게시판</Link>{" "}
+        <Link to="/board/notice">📢 공지사항</Link>{" "}
+        <Link to="/board/free">🏡 자유게시판</Link>{" "}
         <Link to="/board/review">⭐ 리뷰 게시판</Link>{" "}
         <a href={`${NOTION_URL}`} target="_blank" rel="noopener noreferrer">
           🌐 노션 바로가기

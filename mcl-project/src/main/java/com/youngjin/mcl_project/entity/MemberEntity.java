@@ -53,4 +53,21 @@ public class MemberEntity {
         this.provider = provider;
         this.providerId = providerId;
     }
+
+    public void updateNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public void updateBirth(LocalDate birth) {
+        this.birth = birth;
+    }
+
+    public void updateFile(String fileUrl) {
+        this.file = fileUrl;
+    }
+
+    // 비밀번호는 암호화된 상태로 전달받아야 합니다.
+    public void updatePassword(String encodedNewPassword) {
+        this.pwd = encodedNewPassword;
+    }
 }

@@ -21,7 +21,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
+import java.util.List;
 
 import static org.springframework.http.HttpMethod.OPTIONS;
 
@@ -36,16 +36,13 @@ public class SecurityConfig {
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
-    // ⭐️ CORS 설정 빈을 주입받습니다.
-    private final CorsConfigurationSource corsConfigurationSource; // ⭐️ 유지
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
 
-                // ⭐️ 수정: 주입받은 CorsConfigurationSource를 명시적으로 적용합니다.
-                .cors(Customizer.withDefaults()) // ⭐️ 수정 완료
+                // ⭐️ CORS 설정 적용
+                .cors(Customizer.withDefaults())
 
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -58,7 +55,9 @@ public class SecurityConfig {
         );
 
         http.authorizeHttpRequests(authorize -> authorize
-                .requestMatchers(OPTIONS, "/**").permitAll() // OPTIONS 허용
+                // ⭐️ 보강: OPTIONS 요청은 모든 필터를 무시하고 바로 허용하도록 설정 순서를 조정합니다.
+                .requestMatchers(OPTIONS, "/**").permitAll()
+
                 // POST /api/v1/auth/signup (회원가입)
                 .requestMatchers(HttpMethod.POST, "/api/v1/auth/signup").permitAll()
                 // POST /api/v1/auth/login (로컬 로그인)
@@ -88,6 +87,7 @@ public class SecurityConfig {
                 .successHandler(oAuth2SuccessHandler)
         );
 
+        // ⭐️ JWT 필터는 CORS 필터(cors(Customizer.withDefaults())) 뒤에 위치하는 것이 일반적입니다.
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -98,7 +98,8 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         // React 개발 서버 HTTPS 주소 허용 (쿠키 전송 허용)
-        configuration.setAllowedOrigins(Arrays.asList(
+        // ⭐️ List.of를 사용하는 것이 Arrays.asList보다 안전합니다 (immutability).
+        configuration.setAllowedOrigins(List.of(
                 "http://192.168.0.190:5173",
                 "https://192.168.0.190:5173",
                 "http://localhost:5173",
@@ -108,11 +109,13 @@ public class SecurityConfig {
         // 쿠키 및 인증 정보 교환 허용
         configuration.setAllowCredentials(true);
 
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
+        // ⭐️ List.of 사용
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("*"));
         configuration.setMaxAge(3600L);
 
-        configuration.setExposedHeaders(Arrays.asList("Authorization", "Set-Cookie", "X-User-Nickname"));
+        // ⭐️ List.of 사용
+        configuration.setExposedHeaders(List.of("Authorization", "Set-Cookie", "X-User-Nickname"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

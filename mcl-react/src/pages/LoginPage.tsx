@@ -140,7 +140,7 @@ const LoginPage: React.FC = () => {
             자체 계정 로그인
           </h2>
 
-          {/* 3. 아이디 입력 필드 (상태 연동) */}
+          {/* 3. 아이디 입력 필드 */}
           <input
             type="text"
             placeholder="아이디"
@@ -150,7 +150,7 @@ const LoginPage: React.FC = () => {
             style={inputStyle}
           />
 
-          {/* 4. 비밀번호 입력 필드 (상태 연동) */}
+          {/* 4. 비밀번호 입력 필드 */}
           <input
             type="password"
             placeholder="비밀번호"

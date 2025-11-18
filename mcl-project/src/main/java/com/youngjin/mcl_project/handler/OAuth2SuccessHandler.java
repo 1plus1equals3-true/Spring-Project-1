@@ -7,9 +7,9 @@ import com.youngjin.mcl_project.jwt.TokenProvider;
 import com.youngjin.mcl_project.service.MemberService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -23,7 +23,7 @@ import java.util.Map;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
+//@RequiredArgsConstructor
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final TokenProvider tokenProvider;
@@ -32,6 +32,11 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     @Value("${frontend.base-url}")
     private String TARGET_URL;
     // TODO: React 실제 URL.
+
+    public OAuth2SuccessHandler(TokenProvider tokenProvider, @Lazy MemberService memberService) {
+        this.tokenProvider = tokenProvider;
+        this.memberService = memberService;
+    }
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {

@@ -124,8 +124,11 @@ public class AuthService {
     @Transactional(readOnly = true)
     public MemberEntity authenticateLocalUser(LoginRequest request) {
 
+        String trimmedUserid = request.getUserid().trim();
+        String trimmedPwd = request.getPwd().trim(); // 권장하지 않음
+
         // 아이디로 사용자 조회
-        MemberEntity member = memberRepository.findByUserid(request.getUserid())
+        MemberEntity member = memberRepository.findByUserid(trimmedUserid)
                 .orElseThrow(() -> new IllegalArgumentException("아이디 또는 비밀번호가 일치하지 않습니다."));
 
         // 소셜 로그인 사용자인지 확인 (자체 로그인 방지)

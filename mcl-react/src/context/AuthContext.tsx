@@ -5,7 +5,9 @@ import apiClient from "../api/apiClient"; // Axios 인스턴스 (withCredentials
 // 1. Context 데이터 타입 정의
 export interface UserInfo {
   nickname: string;
-  profileImageUrl: string | null; // 백엔드 DTO에 맞게 타입 추가
+  profileImageUrl: string | null;
+  birth: string | null;
+  grade: number;
   // 필요한 다른 사용자 정보 필드 추가 가능
 }
 
@@ -20,6 +22,7 @@ interface AuthContextType {
   refreshUser: () => Promise<void>;
   // 로그아웃 함수
   logout: () => Promise<void>;
+  updateUser: (data: Partial<UserInfo>) => void;
 }
 
 // 2. Context 생성 및 초기값 설정
@@ -35,6 +38,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   const isLoggedIn = !!user; // user 객체 존재 여부로 로그인 상태 판단
+
+  const updateUser = (data: Partial<UserInfo>) => {
+    setUser((prevUser) => {
+      if (!prevUser) return null; // 사용자가 없으면 업데이트하지 않음
+      return { ...prevUser, ...data }; // 이전 사용자 정보에 새 데이터를 병합
+    });
+  };
 
   // 백엔드의 /me 엔드포인트를 호출하여 사용자 정보를 가져오는 함수
   const fetchUserInfo = async () => {
@@ -99,6 +109,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         isLoggedIn,
         refreshUser,
         logout,
+        updateUser,
       }}
     >
       {/* ⭐️ 로딩 중에는 아무것도 렌더링하지 않거나, 스피너를 보여줄 수 있습니다. */}
