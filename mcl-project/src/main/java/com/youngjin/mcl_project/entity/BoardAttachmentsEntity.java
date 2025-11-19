@@ -41,6 +41,7 @@ public class BoardAttachmentsEntity {
     // DB의 'temp', 'active' 문자열과 매핑
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 10, nullable = false)
+    @Builder.Default
     private FileStatus status = FileStatus.TEMP;
 
     // ⭐️ 파일 생성/업로드 일시

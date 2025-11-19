@@ -111,20 +111,35 @@ const Sidebar: React.FC = () => {
           🔑 로그인 / 회원가입
         </button>
       )}
-      <h2>🧭 메뉴</h2>{" "}
+      <h2>🧭 메뉴</h2>
       <nav className="main-nav">
-        {/* ⭐️ React Router Link 컴포넌트로 변경 */} {" "}
         <Link to="/my-collection" className="nav-item highlight">
-          🚀 내 컬렉션 정리하기{" "}
+          🚀 내 컬렉션 정리하기
         </Link>
-        <Link to="/board/notice">📢 공지사항</Link>{" "}
-        <Link to="/board/free">🏡 자유게시판</Link>{" "}
-        <Link to="/board/review">⭐ 리뷰 게시판</Link>{" "}
-        <a href={`${NOTION_URL}`} target="_blank" rel="noopener noreferrer">
+      </nav>
+      <h2 style={{ marginTop: "20px" }}>📝 게시판</h2>
+      <nav className="main-nav">
+        <Link to="/board/notice" className="nav-item">
+          📢 공지사항
+        </Link>
+        <Link to="/board/free" className="nav-item">
+          🏡 자유게시판
+        </Link>
+        <Link to="/board/review" className="nav-item">
+          ⭐ 리뷰 게시판
+        </Link>
+      </nav>
+      <h2 style={{ marginTop: "20px" }}>📝 일지</h2>
+      <nav className="main-nav">
+        <a
+          href={`${NOTION_URL}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="nav-item"
+        >
           🌐 노션 바로가기
         </a>
       </nav>
-       {" "}
     </div>
   );
 };

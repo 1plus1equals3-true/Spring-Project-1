@@ -71,6 +71,8 @@ public class SecurityConfig {
                 // 토큰 재발급 및 로그아웃 POST 허용
                 .requestMatchers(HttpMethod.POST, "/api/v1/auth/reissue").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/auth/logout").permitAll()
+                // 공지사항 불러오기
+                .requestMatchers("/api/v1/board/list").permitAll()
                 .requestMatchers(
                         "/",
                         "/api/auth/**",
