@@ -1,15 +1,11 @@
 package com.youngjin.mcl_project.controller;
 
-import com.youngjin.mcl_project.dto.BoardCommentCreationRequest;
-import com.youngjin.mcl_project.dto.BoardCommentResponse;
-import com.youngjin.mcl_project.dto.BoardCommentUpdateRequest;
-import com.youngjin.mcl_project.dto.BoardCreationRequest;
-import com.youngjin.mcl_project.dto.BoardDetailResponse;
-import com.youngjin.mcl_project.dto.BoardListResponse;
-import com.youngjin.mcl_project.dto.BoardUpdateRequest;
+import com.youngjin.mcl_project.dto.*;
 import com.youngjin.mcl_project.entity.BoardEntity.BoardType;
 import com.youngjin.mcl_project.service.BoardCommentService;
 import com.youngjin.mcl_project.service.BoardService;
+import com.youngjin.mcl_project.service.MemberService;
+import com.youngjin.mcl_project.util.SecurityUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -28,12 +25,38 @@ public class BoardController {
 
     private final BoardService boardService;
     private final BoardCommentService boardCommentService;
+    private final MemberService memberService;
 
-    // ⭐️ 임시 인증 정보 및 IP 주소 추출
-    // 실제 환경에서는 Spring Security와 Servlet API를 사용해야 합니다.
+    // ⭐️ DB 조회를 통해 현재 로그인한 유저의 idx를 가져오는 메서드
     private long getCurrentMemberIdx() {
-        // 실제로는 SecurityContext에서 가져와야 함 (예시: 8번 사용자)
-        return 8L;
+        String providerId;
+        try {
+            // 1. Security Context에서 ProviderId (로그인 ID)를 가져옵니다.
+            providerId = SecurityUtil.getCurrentProviderId();
+        } catch (RuntimeException e) {
+            // Security Context에 인증 정보가 없을 경우 (SecurityUtil에서 던지는 예외)
+            log.warn("Security Context에 인증 정보가 없어 비로그인 처리: {}", e.getMessage());
+            return 0L;
+        }
+
+        // providerId가 "anonymousUser"인 경우 즉시 0L 반환
+        if ("anonymousUser".equals(providerId)) {
+            log.warn("비로그인 사용자(anonymousUser)가 인증이 필요한 API 접근 시도.");
+            return 0L;
+        }
+
+        try {
+            // 2. MemberService의 정의된 메서드를 사용하여 ProviderId를 기반으로 memberIdx를 조회합니다.
+            // MemberService.getMemberIdxByProviderId는 회원을 찾을 수 없을 때 IllegalArgumentException을 던집니다.
+            long memberIdx = memberService.getMemberIdxByProviderId(providerId);
+            log.debug("인증된 사용자 ProviderId: {}, MemberIdx: {}", providerId, memberIdx);
+            return memberIdx;
+        } catch (IllegalArgumentException e) {
+            // 해당 ProviderId를 가진 사용자가 DB에 없을 경우 (예: JWT는 유효하나 계정 삭제됨)
+            log.error("DB에서 ProviderId에 해당하는 MemberIdx를 찾을 수 없습니다: {}", providerId, e);
+            // 인증은 되었지만 사용자 정보가 유효하지 않으므로 접근 거부 예외를 다시 던집니다.
+            throw new RuntimeException("유효하지 않은 사용자 정보입니다.", e);
+        }
     }
 
     private String getClientIp(HttpServletRequest request) {
@@ -89,6 +112,11 @@ public class BoardController {
         long memberIdx = getCurrentMemberIdx();
         String ipAddress = getClientIp(httpServletRequest);
 
+        // 💡 인증이 필요한 API이므로, memberIdx가 0L(비로그인)인 경우 처리
+        if (memberIdx == 0L) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
         log.info("게시글 작성 요청: MemberIdx={}, Type={}", memberIdx, request.getBoardType());
 
         try {
@@ -112,6 +140,11 @@ public class BoardController {
         long memberIdx = getCurrentMemberIdx();
         String ipAddress = getClientIp(httpServletRequest);
 
+        // 💡 인증이 필요한 API이므로, memberIdx가 0L(비로그인)인 경우 처리
+        if (memberIdx == 0L) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
         log.info("게시글 수정 요청: ID={}, MemberIdx={}", request.getIdx(), memberIdx);
 
         try {
@@ -134,6 +167,12 @@ public class BoardController {
     public ResponseEntity<Void> deleteBoard(@PathVariable long idx) {
 
         long memberIdx = getCurrentMemberIdx();
+
+        // 💡 인증이 필요한 API이므로, memberIdx가 0L(비로그인)인 경우 처리
+        if (memberIdx == 0L) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
         log.info("게시글 삭제 요청: ID={}, MemberIdx={}", idx, memberIdx);
 
         try {
@@ -173,6 +212,11 @@ public class BoardController {
         long memberIdx = getCurrentMemberIdx();
         String ipAddress = getClientIp(httpServletRequest);
 
+        // 💡 인증이 필요한 API이므로, memberIdx가 0L(비로그인)인 경우 처리
+        if (memberIdx == 0L) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
         log.info("댓글 작성 요청: Board ID={}, MemberIdx={}", request.getBoardIdx(), memberIdx);
 
         try {
@@ -195,6 +239,12 @@ public class BoardController {
     public ResponseEntity<Void> updateComment(@RequestBody BoardCommentUpdateRequest request) {
 
         long memberIdx = getCurrentMemberIdx();
+
+        // 💡 인증이 필요한 API이므로, memberIdx가 0L(비로그인)인 경우 처리
+        if (memberIdx == 0L) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
         log.info("댓글 수정 요청: Comment ID={}, MemberIdx={}", request.getIdx(), memberIdx);
 
         try {
@@ -217,6 +267,12 @@ public class BoardController {
     public ResponseEntity<Void> deleteComment(@PathVariable long idx) {
 
         long memberIdx = getCurrentMemberIdx();
+
+        // 💡 인증이 필요한 API이므로, memberIdx가 0L(비로그인)인 경우 처리
+        if (memberIdx == 0L) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
         log.info("댓글 삭제 요청: Comment ID={}, MemberIdx={}", idx, memberIdx);
 
         try {
@@ -227,6 +283,35 @@ public class BoardController {
             return ResponseEntity.badRequest().build(); // 권한 없음, 댓글 없음 등
         } catch (Exception e) {
             log.error("댓글 삭제 중 서버 오류", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // --- 4. 파일 업로드 API ---
+
+    /**
+     * 에디터 이미지 업로드 (비동기)
+     * POST /api/v1/board/image-upload
+     */
+    @PostMapping("/image-upload")
+    public ResponseEntity<BoardImageUploadResponse> uploadBoardImage(
+            @RequestParam("file") MultipartFile file,
+            HttpServletRequest httpServletRequest) {
+
+        long memberIdx = getCurrentMemberIdx();
+
+        // 비로그인 사용자도 이미지를 업로드 불가
+        if (memberIdx == 0L) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        log.info("게시판 이미지 업로드 요청: MemberIdx={}", memberIdx);
+
+        try {
+            BoardImageUploadResponse response = boardService.uploadTempFile(file);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("이미지 업로드 실패", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

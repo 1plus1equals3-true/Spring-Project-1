@@ -30,7 +30,7 @@ const PostListSection: React.FC<PostListSectionProps> = ({
           data.map((item) => (
             <li key={item.id}>
               {/* 실제 구현 시 Link 컴포넌트로 변경 */}
-              <a href={`/post/${item.id}`} className="title-link">
+              <a href={`/temp/${item.id}`} className="title-link">
                 {item.title}
               </a>
               <span className="date">{item.date}</span>

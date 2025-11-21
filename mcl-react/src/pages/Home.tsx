@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 // 조합할 레이아웃 및 섹션 컴포넌트 import
 import MainLayout from "../components/layout/MainLayout";
-import PostListSection from "../components/sections/PostListSection";
+import PostListSection from "../components/sections/HomeListSection";
+import PostFreeSection from "../components/sections/HomeFreeSection";
+import PostNoticeSection from "../components/sections/HomeNoticeSection";
 import ReviewCardSection from "../components/sections/ReviewCardSection";
 import apiClient from "../api/apiClient";
 import axios from "axios";
@@ -12,10 +14,10 @@ import "../styles/main.css";
 
 // 1-1. 백엔드에서 받는 개별 게시물 항목의 타입
 interface BoardItemResponse {
-  idx: number; // item.idx의 'idx' 필드 정의
+  idx: number;
   title: string;
-  createdAt: string; // item.createdAt의 'createdAt' 필드 정의
-  // 다른 필드가 있다면 여기에 추가합니다 (예: writer, viewCount 등)
+  regdate: string; // item.regdate의 'regdate' 필드 정의
+  // 다른 필드가 있다면 여기에 추가
 }
 
 // 1-2. Spring Data JPA Page 응답 전체 구조 타입
@@ -91,10 +93,14 @@ const Home: React.FC = () => {
         fetchedData.map((item) => ({
           id: item.idx,
           title: item.title,
-          // item.createdAt이 ISO String 형태라고 가정하고 날짜 포맷팅
-          date: item.createdAt
-            ? item.createdAt.slice(0, 10)
-            : new Date().toISOString().slice(0, 10),
+          // item.regdate이 ISO String 형태라고 가정하고 날짜 포맷팅
+          date: item.regdate
+            ? item.regdate.slice(0, 1) +
+              "-" +
+              item.regdate.slice(1, 2) +
+              "-" +
+              item.regdate.slice(2, 3)
+            : new Date().toISOString().slice(0, 3),
         }))
       );
     } catch (err) {
@@ -129,9 +135,13 @@ const Home: React.FC = () => {
         fetchedData.map((item) => ({
           id: item.idx,
           title: item.title,
-          date: item.createdAt
-            ? item.createdAt.slice(0, 10)
-            : new Date().toISOString().slice(0, 10),
+          date: item.regdate
+            ? item.regdate.slice(0, 1) +
+              "-" +
+              item.regdate.slice(1, 2) +
+              "-" +
+              item.regdate.slice(2, 3)
+            : new Date().toISOString().slice(0, 3),
         }))
       );
     } catch (err) {
@@ -152,8 +162,7 @@ const Home: React.FC = () => {
   useEffect(() => {
     fetchNotices();
     fetchFreeBoards();
-    // 🚨 다른 섹션 데이터도 여기서 호출하는 로직을 추가해야 합니다. (예: fetchMyCollections(), fetchFreeBoards())
-    // 현재는 공지사항만 구현
+    // 🚨 다른 섹션 데이터도 여기서 호출하는 로직을 추가
   }, []);
 
   // 4. 공지사항 섹션 렌더링 (로딩/오류 포함)
@@ -185,7 +194,11 @@ const Home: React.FC = () => {
     }
 
     return (
-      <PostListSection title="📣 공지사항" data={noticeData} fullWidth={true} />
+      <PostNoticeSection
+        title="📣 공지사항"
+        data={noticeData}
+        fullWidth={true}
+      />
     );
   };
 
@@ -220,7 +233,7 @@ const Home: React.FC = () => {
     }
 
     return (
-      <PostListSection
+      <PostFreeSection
         title="💬 자유게시판 최신글"
         data={freeBoardData}
         fullWidth={false}
@@ -236,12 +249,6 @@ const Home: React.FC = () => {
       <div className="content-grid">
         {/* 1. 공지사항 (Full Width) */}
         {renderNoticeSection()}
-
-        {/* 1. 공지사항 (Full Width) - 기존의 코드 - 확인 후 제거 */}
-        {/* <PostListSection
-          title="📣 공지사항"
-          data={noticeData}
-          fullWidth={true}/> */}
 
         {/* 2. 최근 수정한 내 컬렉션 (Half Width) */}
         <PostListSection

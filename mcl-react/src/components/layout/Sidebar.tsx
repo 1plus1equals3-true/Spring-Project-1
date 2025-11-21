@@ -113,6 +113,9 @@ const Sidebar: React.FC = () => {
       )}
       <h2>🧭 메뉴</h2>
       <nav className="main-nav">
+        <Link to="/" className="nav-item highlight">
+          🌏 홈
+        </Link>
         <Link to="/my-collection" className="nav-item highlight">
           🚀 내 컬렉션 정리하기
         </Link>

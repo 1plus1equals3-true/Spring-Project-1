@@ -1,13 +1,14 @@
 package com.youngjin.mcl_project.repository;
 
-import com.youngjin.mcl_project.entity.BoardAttachmentsEntity; // 파일 엔티티로 가정
-import com.youngjin.mcl_project.entity.BoardAttachmentsEntity.FileStatus; // ⭐️ FileStatus import 경로 수정
+import com.youngjin.mcl_project.entity.BoardAttachmentsEntity;
+import com.youngjin.mcl_project.entity.BoardAttachmentsEntity.FileStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -40,6 +41,9 @@ public interface BoardAttachmentsRepository extends JpaRepository<BoardAttachmen
     @Query("UPDATE BoardAttachmentsEntity a SET a.boardIdx = null, a.status = 'TEMP' WHERE a.boardIdx = :boardIdx AND a.status = 'ACTIVE'")
     int resetFilesToTemp(@Param("boardIdx") long boardIdx);
 
-    // 💡 상세 조회 시 파일 목록 DTO 변환을 위한 조회 메서드 (BoardDetailResponse 생성 시 필요)
-    // List<BoardAttachmentsEntity> findAllByBoardIdx(long boardIdx);
+    // 게시글 상세 조회 시 파일 목록 가져오기 (ACTIVE 상태인 것만)
+    List<BoardAttachmentsEntity> findAllByBoardIdxAndStatus(long boardIdx, FileStatus status);
+
+    // 특정 시간(thresholdTime) 이전에 생성되었고, 상태가 status인 파일 목록 조회
+    List<BoardAttachmentsEntity> findAllByStatusAndRegdateBefore(FileStatus status, LocalDateTime thresholdTime);
 }

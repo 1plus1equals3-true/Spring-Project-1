@@ -1,9 +1,7 @@
 package com.youngjin.mcl_project.service;
 
-import com.youngjin.mcl_project.dto.BoardCreationRequest;
-import com.youngjin.mcl_project.dto.BoardDetailResponse;
-import com.youngjin.mcl_project.dto.BoardListResponse;
-import com.youngjin.mcl_project.dto.BoardUpdateRequest;
+import com.youngjin.mcl_project.dto.*;
+import com.youngjin.mcl_project.entity.BoardAttachmentsEntity;
 import com.youngjin.mcl_project.entity.BoardAttachmentsEntity.FileStatus;
 import com.youngjin.mcl_project.entity.BoardEntity;
 import com.youngjin.mcl_project.entity.BoardEntity.BoardType;
@@ -12,15 +10,24 @@ import com.youngjin.mcl_project.repository.BoardCommentRepository;
 import com.youngjin.mcl_project.repository.BoardRepository;
 import com.youngjin.mcl_project.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor // final 필드에 대한 생성자 주입을 자동으로 처리
@@ -29,8 +36,13 @@ public class BoardService {
     private final BoardRepository boardRepository;
     private final MemberRepository memberRepository;
     private final BoardCommentRepository commentRepository;
-    // ⭐️ 파일 첨부 레포지토리를 주입합니다.
     private final BoardAttachmentsRepository attachmentsRepository;
+
+    @Value("${file.upload.base-dir}")
+    private String BASE_DIR;
+
+    @Value("${file.upload.board-dir}")
+    private String BOARD_DIR;
 
     /**
      * 게시글 목록을 조회하고 DTO로 변환하여 반환합니다. (페이징 포함)
@@ -97,10 +109,11 @@ public class BoardService {
         String nickname = memberRepository.findNicknameByIdx(entity.getMemberIdx())
                 .orElse("알 수 없음");
 
-        // 💡 파일 첨부 목록 조회 (TODO: BoardAttachmentsRepository를 사용해야 합니다.)
-        // List<FileAttachmentResponse> attachments = attachmentsRepository.findAllByBoardIdx(idx).stream()
-        //                                            .map(FileAttachmentResponse::fromEntity)
-        //                                            .collect(Collectors.toList());
+        List<FileAttachmentResponse> attachments = attachmentsRepository
+                .findAllByBoardIdxAndStatus(idx, FileStatus.ACTIVE)
+                .stream()
+                .map(FileAttachmentResponse::fromEntity)
+                .toList();
 
         return BoardDetailResponse.builder()
                 .idx(entity.getIdx())
@@ -112,8 +125,65 @@ public class BoardService {
                 .regdate(entity.getRegdate())
                 .moddate(entity.getModdate())
                 .authorNickname(nickname)
-                // .attachments(attachments)
+                .attachments(attachments)
                 .build();
+    }
+
+    /**
+     * [이미지 업로드 처리]
+     * 에디터에서 이미지를 첨부했을 때 호출됩니다.
+     * 파일을 저장하고 'TEMP' 상태의 엔티티를 생성합니다.
+     */
+    @Transactional
+    public BoardImageUploadResponse uploadTempFile(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("파일이 비어있습니다.");
+        }
+
+        try {
+            // 1. 날짜별 폴더 생성 (예: 2025/11/21)
+            String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
+            Path uploadPath = Paths.get(BASE_DIR + BOARD_DIR + today);
+
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+
+            // 2. 파일명 생성 (UUID 충돌 방지)
+            String originalName = file.getOriginalFilename();
+            String uuid = UUID.randomUUID().toString();
+            String extension = originalName.substring(originalName.lastIndexOf("."));
+            String storedName = uuid + extension;
+
+            // 3. 물리적 파일 저장
+            Path filePath = uploadPath.resolve(storedName);
+            Files.copy(file.getInputStream(), filePath);
+
+            // 4. DB에 파일 정보 저장 (Status: TEMP, BoardIdx: null)
+            BoardAttachmentsEntity attachment = BoardAttachmentsEntity.builder()
+                    .boardIdx(null) // 아직 게시글과 연결되지 않음
+                    .originalName(originalName)
+                    .storedName(storedName)
+                    .dir(today) // 날짜 경로만 저장 (2025/11/21)
+                    .status(FileStatus.TEMP) // ⭐️ 임시 상태
+                    .regdate(LocalDateTime.now())
+                    .build();
+
+            BoardAttachmentsEntity savedFile = attachmentsRepository.save(attachment);
+
+            // 5. 접근 URL 생성 (/api/images/MCL/board/2025/11/21/uuid.png)
+            // WebConfig에서 /api/images/** 를 BASE_DIR로 매핑했으므로 그 뒤 경로만 붙여줌
+            String fileUrl = "/api/images/" + BOARD_DIR + today + "/" + storedName;
+
+            return BoardImageUploadResponse.builder()
+                    .fileIdx(savedFile.getIdx())
+                    .fileUrl(fileUrl)
+                    .originalFilename(originalName)
+                    .build();
+
+        } catch (IOException e) {
+            throw new RuntimeException("파일 업로드 중 오류가 발생했습니다.", e);
+        }
     }
 
     /**

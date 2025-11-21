@@ -1,0 +1,140 @@
+/* -----------------------------------------------------------
+// 1. 메인 에디터 컨테이너 및 로딩 스타일
+// ----------------------------------------------------------- */
+
+.text-editor-container {
+  border: 1px solid #ccc; /* 전체 테두리 */
+  border-radius: 0.5rem; /* 둥근 모서리 */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  background-color: #fff;
+  max-width: 100%;
+}
+
+.editor-loading {
+  padding: 1rem;
+  background-color: #f3f4f6; /* gray-100 */
+  text-align: center;
+  border-radius: 0.5rem;
+  color: #9ca3af; /* gray-400 */
+  margin-bottom: 1rem;
+}
+
+/* -----------------------------------------------------------
+// 2. 메뉴바 스타일
+// ----------------------------------------------------------- */
+
+.menu-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem; /* gap-2 */
+  padding: 0.5rem; /* p-2 */
+  border-bottom: 1px solid #e5e7eb; /* border-b border-gray-200 */
+  background-color: #f9fafb; /* gray-50 */
+  border-top-left-radius: 0.5rem; /* rounded-t-lg */
+  border-top-right-radius: 0.5rem;
+}
+
+/* -----------------------------------------------------------
+// 3. 메뉴 버튼 스타일
+// ----------------------------------------------------------- */
+
+.menu-button {
+  padding: 0.5rem; /* p-2 */
+  border-radius: 0.25rem; /* rounded */
+  transition: background-color 0.1s ease-in-out, color 0.1s ease-in-out;
+  background-color: #fff;
+  color: #4b5563; /* text-gray-700 */
+  border: none;
+  cursor: pointer;
+  line-height: 1; /* 아이콘 정렬 */
+}
+
+.menu-button:hover:not(.active) {
+  background-color: #f3f4f6; /* hover:bg-gray-100 */
+}
+
+.menu-button.active {
+  background-color: #4f46e5; /* bg-indigo-600 */
+  color: white;
+}
+
+.menu-button-icon {
+  font-size: 1.25rem; /* text-xl */
+  font-weight: 700; /* font-bold */
+  display: inline-block;
+}
+
+/* -----------------------------------------------------------
+// 4. 에디터 콘텐츠 스타일 (Tiptap ProseMirror)
+// ----------------------------------------------------------- */
+
+/* 에디터 본문 wrapper */
+.editor-content {
+  /* 기존 스타일: p-4 min-h-[300px] rounded-b-lg bg-white */
+  padding: 1rem;
+  min-height: 300px;
+  border-bottom-left-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
+  background-color: #fff;
+
+  /* 포커스 스타일 */
+  outline: none;
+}
+
+/* Tiptap 기본 요소 스타일 (기존 prose-indigo max-w-none 대체) */
+.editor-content > * + * {
+  margin-top: 0.75em; /* 단락 간격 */
+}
+
+.editor-content h1,
+.editor-content h2 {
+  font-weight: 700;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  line-height: 1.2;
+  color: #1f2937; /* gray-800 */
+}
+
+.editor-content h1 {
+  font-size: 2em; /* Tailwind h1 equivalent */
+  border-bottom: 2px solid #e0e0e0;
+  padding-bottom: 0.3em;
+}
+
+.editor-content h2 {
+  font-size: 1.5em; /* Tailwind h2 equivalent */
+}
+
+.editor-content p {
+  margin-top: 1em;
+  margin-bottom: 1em;
+  line-height: 1.6;
+}
+
+/* 리스트 스타일 */
+.editor-content ul,
+.editor-content ol {
+  padding-left: 1.5em;
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+.editor-content ul {
+  list-style-type: disc;
+}
+
+.editor-content ol {
+  list-style-type: decimal;
+}
+
+/* 링크 스타일 (기존 Link Extension HTMLAttributes 대체) */
+.editor-content a {
+  color: #2563eb; /* blue-600 */
+  text-decoration: underline;
+  transition: color 0.15s;
+  cursor: pointer;
+}
+
+.editor-content a:hover {
+  color: #1d4ed8; /* blue-800 */
+}
