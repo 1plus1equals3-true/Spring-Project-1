@@ -82,11 +82,11 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.5rem; /* 텍스트 항목 사이의 간격 */
+  gap: 0.5rem;
 }
 
 .detail-info-separator {
-  color: #d1d5db; /* 구분선 색상 */
+  color: #d1d5db;
 }
 
 /* 본문 내용 */
@@ -102,14 +102,22 @@
 .detail-content {
   line-height: 1.75;
   color: #374151;
-  min-height: 200px; /* 최소 높이 */
+  min-height: 200px;
   word-break: break-word;
-  /* 에디터 스타일을 반영할 수 있도록 기본 스타일만 설정 */
+}
+
+/* 이미지 스타일 (에디터 콘텐츠 내부) */
+.detail-content img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 1rem 0;
 }
 
 /* 통계 정보 (추천/댓글 수) */
 .detail-stats {
   display: flex;
+  align-items: center;
   gap: 1.5rem;
   margin-top: 2rem;
   padding-top: 1rem;
@@ -121,12 +129,44 @@
   align-items: center;
   font-size: 1rem;
   font-weight: 500;
-  color: #4f46e5; /* Indigo-600 */
+  color: #555;
 }
 
 .stat-item svg {
   margin-right: 0.3rem;
-  color: #818cf8; /* Indigo-400 */
+}
+
+/* ⭐️ 추천 버튼 스타일 (CSS 통합) */
+.recommend-btn {
+  background: none;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  padding: 8px 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s ease-in-out;
+  color: #555; /* 기본 색상 */
+}
+
+/* 추천 버튼 호버 시 */
+.recommend-btn:hover {
+  background-color: #fff0f5; /* 연한 핑크 배경 */
+  border-color: #e11d48;
+  color: #e11d48;
+}
+
+/* ⭐️ 추천 활성화 상태 (Active) */
+.recommend-btn.active {
+  background-color: #fff0f5;
+  border-color: #e11d48;
+  color: #e11d48;
+  font-weight: bold;
+}
+
+.recommend-btn.active svg {
+  color: #e11d48;
 }
 
 /* 액션 버튼 */
@@ -135,7 +175,7 @@
   justify-content: space-between;
   align-items: center;
   padding-bottom: 2rem;
-  border-bottom: 1px solid #e5e7eb;
+  /* border-bottom: 1px solid #e5e7eb; */
   margin-bottom: 2rem;
 }
 
@@ -154,47 +194,293 @@
 }
 
 .back-to-list-btn {
-  background-color: #6b7280; /* Gray-500 */
+  background-color: #6b7280;
   color: white;
 }
 .back-to-list-btn:hover {
-  background-color: #4b5563; /* Gray-600 */
+  background-color: #4b5563;
 }
 
 .edit-btn {
-  background-color: #3b82f6; /* Blue-500 */
+  background-color: #3b82f6;
   color: white;
 }
 .edit-btn:hover {
-  background-color: #2563eb; /* Blue-600 */
+  background-color: #2563eb;
 }
 
 .delete-btn {
-  background-color: #ef4444; /* Red-500 */
+  background-color: #ef4444;
   color: white;
 }
 .delete-btn:hover {
-  background-color: #dc2626; /* Red-600 */
+  background-color: #dc2626;
 }
 
 /* 댓글 섹션 */
 .comments-section {
-  margin-top: 2rem;
-  padding-top: 1rem;
+  margin-top: 20px;
 }
 
 .comments-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #1f2937;
-  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: #333;
 }
 
-.comment-placeholder {
-  padding: 1.5rem;
-  background-color: #f9fafb;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.375rem;
-  color: #6b7280;
+/* 댓글 입력 폼 */
+.comment-form {
+  margin-bottom: 30px;
+  background: #f9fafb;
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid #eee;
+  display: flex;
+  flex-direction: column;
+}
+
+.comment-textarea {
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 0.95rem;
+  resize: vertical;
+  margin-bottom: 10px;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.comment-textarea:focus {
+  outline: none;
+  border-color: #6366f1;
+  background: #fff;
+}
+
+.comment-submit-btn {
+  background-color: #6366f1;
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  align-self: flex-end; /*오른쪽 끝에 버튼 배치, 제거 시 하단 전체 버튼*/
+  margin-top: 10px;
+}
+
+.comment-submit-btn:hover {
+  background-color: #4f46e5;
+}
+
+/* 비로그인 안내 박스 */
+.login-plz-box {
   text-align: center;
+  padding: 30px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  color: #666;
+  margin-bottom: 30px;
+}
+
+.login-plz-box button {
+  margin-top: 10px;
+  background: none;
+  border: 1px solid #6366f1;
+  color: #6366f1;
+  padding: 5px 15px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* 댓글 리스트 아이템 */
+.comment-tree-node {
+  margin-bottom: 15px;
+}
+
+.comment-item {
+  display: flex;
+  gap: 15px; /* 간격 조금 더 넓게 */
+  padding: 20px; /* 내부 여백 확보 */
+
+  /* ⭐️ 배경색 추가 */
+  background-color: #ffffff;
+
+  /* ⭐️ 테두리 대신 부드러운 그림자 적용 */
+  /* border-bottom: 1px solid #f1f1f1;  <-- 기존 코드 삭제 */
+  border: 1px solid #e5e7eb; /* 아주 연한 테두리 */
+  border-radius: 12px; /* 둥근 모서리 */
+
+  /* 살짝 떠있는 느낌 */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+
+  /* 부드러운 전환 효과 */
+  transition: all 0.2s ease-in-out;
+}
+
+/* 마우스 올렸을 때 살짝 강조 */
+.comment-item:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transform: translateY(-1px);
+  border-color: #d1d5db;
+}
+
+/* 대댓글 스타일 (깊이감 표현) */
+.comment-item.is-reply {
+  background-color: #f9fafb; /* 대댓글은 살짝 어두운 배경 */
+  border: 1px solid #eee; /* 테두리 연하게 */
+  margin-top: 10px; /* 위 댓글과 간격 */
+  box-shadow: none; /* 대댓글은 그림자 제거해서 차분하게 */
+}
+
+.reply-icon-container {
+  padding-top: 2px;
+}
+
+.comment-content-box {
+  flex: 1;
+}
+
+.comment-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.comment-author {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.comment-date {
+  font-size: 0.8rem;
+  color: #999;
+}
+
+.comment-text {
+  font-size: 0.95rem;
+  color: #444;
+  line-height: 1.5;
+}
+
+/* 댓글 액션 버튼 (답글, 삭제) */
+.comment-actions {
+  margin-top: 8px;
+  display: flex;
+  gap: 10px;
+}
+
+.comment-action-btn {
+  background: none;
+  border: none;
+  font-size: 0.8rem;
+  color: #777;
+  cursor: pointer;
+  padding: 0;
+}
+
+.comment-action-btn:hover {
+  color: #6366f1;
+  text-decoration: underline;
+}
+
+.comment-action-btn.delete {
+  color: #ff5555;
+}
+
+/* 답글 입력창 영역 */
+.reply-input-wrapper {
+  margin-top: 10px;
+  margin-bottom: 15px;
+  padding: 15px;
+  background: #f0f2f5;
+  border-radius: 8px;
+}
+
+.reply-textarea {
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 10px;
+  font-size: 0.9rem;
+  resize: none;
+  margin-bottom: 8px;
+  box-sizing: border-box;
+}
+
+.reply-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.reply-form-actions button {
+  padding: 6px 14px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  border: none;
+}
+
+.reply-form-actions .cancel-btn {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.reply-form-actions .submit-btn {
+  background: #6366f1;
+  color: white;
+}
+
+.no-comments {
+  text-align: center;
+  color: #999;
+  padding: 40px 0;
+}
+
+/* ⭐️ 댓글 수정 모드 스타일 */
+.comment-edit-form {
+  width: 100%;
+  margin-top: 5px;
+}
+
+.comment-edit-textarea {
+  width: 100%;
+  border: 1px solid #6366f1; /* 수정 중임을 알리는 색상 */
+  border-radius: 6px;
+  padding: 10px;
+  font-size: 0.95rem;
+  resize: none;
+  box-sizing: border-box;
+  margin-bottom: 8px;
+  background-color: #fff;
+  font-family: inherit;
+}
+
+.comment-edit-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.comment-edit-actions button {
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  border: 1px solid #ddd;
+  background: white;
+}
+
+.comment-edit-actions .save-btn {
+  background-color: #6366f1;
+  color: white;
+  border: none;
+}
+
+.comment-edit-actions .cancel-btn:hover {
+  background-color: #f3f4f6;
 }

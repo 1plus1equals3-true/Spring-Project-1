@@ -47,4 +47,16 @@ public class BoardEntity {
     public enum BoardType {
         NOTICE, FREE
     }
+
+    // 추천 수 증가
+    public void increaseRecommend() {
+        this.recommend++;
+    }
+
+    // 추천 수 감소 (0보다 작아지지 않게 방어)
+    public void decreaseRecommend() {
+        if (this.recommend > 0) {
+            this.recommend--;
+        }
+    }
 }

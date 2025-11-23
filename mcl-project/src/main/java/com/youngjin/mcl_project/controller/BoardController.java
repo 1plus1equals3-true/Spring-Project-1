@@ -89,8 +89,19 @@ public class BoardController {
     public ResponseEntity<BoardDetailResponse> getBoardDetail(@PathVariable long idx) {
         log.info("게시글 상세 조회 요청: ID={}", idx);
 
+        String providerId = null;
         try {
-            BoardDetailResponse detail = boardService.getBoardDetail(idx);
+            providerId = SecurityUtil.getCurrentProviderId();
+            if ("anonymousUser".equals(providerId)) {
+                providerId = null;
+            }
+        } catch (Exception e) {
+            // 비로그인 사용자도 글은 볼 수 있어야 하므로 예외 발생 시 null 처리
+            providerId = null;
+        }
+
+        try {
+            BoardDetailResponse detail = boardService.getBoardDetail(idx, providerId);
             return ResponseEntity.ok(detail);
         } catch (IllegalArgumentException e) {
             log.error("게시글 조회 실패: {}", e.getMessage());
@@ -313,6 +324,40 @@ public class BoardController {
         } catch (Exception e) {
             log.error("이미지 업로드 실패", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // --- 5. 게시글 추천 API ---
+
+    /**
+     * 게시글 추천 토글 (ON/OFF)
+     * POST /api/v1/board/recommend/{idx}
+     */
+    @PostMapping("/recommend/{idx}")
+    public ResponseEntity<String> toggleRecommend(@PathVariable Long idx) {
+
+        // 1. 현재 로그인한 사용자 확인
+        String providerId;
+        try {
+            providerId = SecurityUtil.getCurrentProviderId();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+        }
+
+        if ("anonymousUser".equals(providerId)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+        }
+
+        // 2. 서비스 호출
+        try {
+            String message = boardService.toggleRecommendation(idx, providerId);
+            return ResponseEntity.ok(message); // "추천하였습니다." 또는 "추천이 취소되었습니다."
+        } catch (IllegalArgumentException e) {
+            log.error("추천 처리 실패: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            log.error("추천 처리 중 서버 오류", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류가 발생했습니다.");
         }
     }
 }

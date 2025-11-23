@@ -7,7 +7,6 @@ import PostNoticeSection from "../components/sections/HomeNoticeSection";
 import ReviewCardSection from "../components/sections/ReviewCardSection";
 import apiClient from "../api/apiClient";
 import axios from "axios";
-import { API_BASE_URL } from "../config/defaultconfig";
 import { Archive, Loader2, AlertCircle } from "lucide-react";
 
 import "../styles/main.css";
@@ -80,11 +79,8 @@ const Home: React.FC = () => {
     setNoticeError(null);
     try {
       // 🚨 API 호출: 최신 5개만 요청
-      const response = await axios.get<BoardListResponse>(
-        `${API_BASE_URL}/api/v1/board/list?type=NOTICE&size=5&page=0`,
-        {
-          // withCredentials: true, // 요청에 토큰담기
-        }
+      const response = await apiClient.get<BoardListResponse>(
+        `/api/v1/board/list?type=NOTICE&size=5&page=0`
       );
 
       const fetchedData: BoardItemResponse[] = response.data.content || [];
@@ -124,9 +120,8 @@ const Home: React.FC = () => {
     setFreeBoardError(null);
     try {
       // type=FREE로 호출
-      const response = await axios.get<BoardListResponse>(
-        `${API_BASE_URL}/api/v1/board/list?type=FREE&size=5&page=0`,
-        {}
+      const response = await apiClient.get<BoardListResponse>(
+        `/api/v1/board/list?type=FREE&size=5&page=0`
       );
 
       const fetchedData: BoardItemResponse[] = response.data.content || [];

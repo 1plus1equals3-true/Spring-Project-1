@@ -2,14 +2,15 @@ import React from "react";
 import MainLayout from "../components/layout/MainLayout";
 import CommonBoard from "../components/sections/CommonBoard";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import "../styles/BoardWriteBtn.css";
 
 const FreeBoardPage: React.FC = () => {
-  const navigate = useNavigate(); // useNavigate 훅 사용
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
   // 글쓰기 버튼 클릭 핸들러
   const handleWriteClick = () => {
-    // 자유게시판 작성 페이지로 이동
     navigate("/board/free/write");
   };
 
@@ -22,12 +23,14 @@ const FreeBoardPage: React.FC = () => {
           boardType="FREE"
         />
 
-        {/* 글쓰기 버튼 */}
-        <div className="write-btn-wrapper">
-          <button className="write-btn" onClick={handleWriteClick}>
-            <span>✏️ 글쓰기</span>
-          </button>
-        </div>
+        {/* ⭐️ 글쓰기 버튼 , user가 존재할 때만 렌더링 */}
+        {user && (
+          <div className="write-btn-wrapper">
+            <button className="write-btn" onClick={handleWriteClick}>
+              <span>✏️ 글쓰기</span>
+            </button>
+          </div>
+        )}
       </div>
     </MainLayout>
   );

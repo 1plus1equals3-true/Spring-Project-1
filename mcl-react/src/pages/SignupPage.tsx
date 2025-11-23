@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { API_BASE_URL } from "../config/defaultconfig"; // ⬅️ 원본 경로 복원
-import Header from "../components/layout/Header"; // ⬅️ 원본 경로 복원
+import apiClient from "../api/apiClient";
+import Header from "../components/layout/Header";
 
 // 회원가입 폼 데이터를 위한 타입 정의
 interface SignupFormData {
@@ -169,8 +169,8 @@ const SignupPage: React.FC = () => {
       const param = name === "userid" ? `userid=${value}` : `nickname=${value}`;
 
       try {
-        const response = await axios.get(
-          `${API_BASE_URL}/api/v1/auth${endpoint}?${param}`
+        const response = await apiClient.get(
+          `/api/v1/auth${endpoint}?${param}`
         );
         const isDuplicated = response.data as boolean; // true: 중복, false: 사용 가능
 
@@ -367,8 +367,8 @@ const SignupPage: React.FC = () => {
 
     setIsLoading(true);
     try {
-      const response = await axios.post(
-        `${API_BASE_URL}/api/v1/auth/signup`,
+      const response = await apiClient.post(
+        `/api/v1/auth/signup`,
         formPayload,
         {
           headers: {

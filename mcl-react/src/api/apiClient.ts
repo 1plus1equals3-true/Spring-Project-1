@@ -6,7 +6,6 @@ interface CustomAxiosRequestConfig extends AxiosRequestConfig {
   _retry?: boolean;
 }
 
-// ⭐️ 2. Axios 인스턴스 생성
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -15,50 +14,34 @@ const apiClient: AxiosInstance = axios.create({
   withCredentials: true,
 });
 
-// ⭐️ 3. 전역 상태 변수 및 큐 함수 (최상위에 선언)
+// 전역 변수
 let isRefreshing = false;
 let failedQueue: {
   resolve: (value: any) => void;
   reject: (reason?: any) => void;
 }[] = [];
 
-const processQueue = (error: any) => {
+const processQueue = (error: any, token: any = null) => {
   failedQueue.forEach((prom) => {
     if (error) {
       prom.reject(error);
     } else {
-      prom.resolve(true);
+      prom.resolve(token);
     }
   });
   failedQueue = [];
 };
 
-// -----------------------------------------------------------------------
-// 4. 응답 인터셉터 설정 (Access Token 만료 처리 로직)
-// -----------------------------------------------------------------------
 apiClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
-    // ⭐️ error.config를 확장된 타입으로 캐스팅하여 사용합니다.
     const originalRequest = error.config as CustomAxiosRequestConfig;
 
-    const errorMessage = (error.response?.data as any)?.message;
-
-    // 401 Unauthorized 이고, 재시도 플래그가 설정되지 않은 요청에 대해서만 처리
+    // 401 에러이고, 아직 재시도하지 않은 요청이라면 무조건 재발급 시도
     if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true; // Access Token 만료에 대한 JSON 메시지 확인 (백엔드와 일치하는지 확인)
-
-      if (
-        errorMessage !== "유효한 Access Token이 쿠키에 없거나 만료되었습니다."
-      ) {
-        // Refresh Token 재발급 대상 오류가 아니면 바로 reject
-        return Promise.reject(error);
-      }
-
-      // Refreshing 중일 경우, 큐에 추가
+      // 이미 재발급 중이라면 큐에 담고 대기
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
-          // 재발급 완료 후 원래 요청을 재시도
           failedQueue.push({
             resolve: () => resolve(apiClient(originalRequest)),
             reject,
@@ -66,27 +49,26 @@ apiClient.interceptors.response.use(
         });
       }
 
-      // 재발급 시작
+      originalRequest._retry = true;
       isRefreshing = true;
 
       try {
-        // 💡 Refresh Token 재발급 API 호출: withCredentials로 쿠키 자동 전송
+        // ⭐️ 재발급 요청
+        // post 데이터가 없다면 null, 옵션은 세 번째 인자
         await axios.post(`${API_BASE_URL}/api/v1/auth/reissue`, null, {
-          withCredentials: true,
+          withCredentials: true, // 쿠키 전송 필수
         });
 
-        // 재발급 성공 시
-        isRefreshing = false;
-        processQueue(null); // 큐에 있는 요청 처리 (새 쿠키로 재시도)
-
-        return apiClient(originalRequest); // ⭐️ 원래 요청을 재시도
+        // 재발급 성공! 큐 처리 및 원래 요청 재시도
+        processQueue(null);
+        return apiClient(originalRequest);
       } catch (refreshError) {
-        // Refresh Token 재발급까지 실패하면 강제 로그아웃
-        isRefreshing = false;
-        processQueue(refreshError);
+        // 재발급 실패 (Refresh Token 만료 등)
+        processQueue(refreshError, null);
 
-        // 강제 로그아웃 및 로그인 페이지로 리다이렉트
-        // window.location.href = "/login";
+        // ⭐️ 선택 사항: 재발급 실패 시 로그인 페이지로 이동시키거나,
+        // AuthContext에서 상태를 비우도록 처리
+        console.log("Refresh Token 만료 혹은 없음, 로그아웃 처리 필요");
 
         return Promise.reject(refreshError);
       } finally {

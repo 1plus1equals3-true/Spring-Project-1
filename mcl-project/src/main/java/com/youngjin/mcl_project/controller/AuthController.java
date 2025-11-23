@@ -40,6 +40,9 @@ public class AuthController {
             @Valid @RequestBody LoginRequest request,
             HttpServletResponse response) {
 
+        long accessAge = tokenProvider.getAccessTokenValidityInSeconds();
+        long refreshAge = tokenProvider.getRefreshTokenValidityInSeconds();
+
         try {
             // 1. 사용자 인증 (아이디, 비밀번호 확인)
             MemberEntity member = authService.authenticateLocalUser(request);
@@ -55,8 +58,8 @@ public class AuthController {
             memberService.updateRefreshToken(member.getProviderId(), refreshToken);
 
             // 4. 쿠키에 토큰 담기
-            addCookieHeader(response, "accessToken", accessToken, 3600);
-            addCookieHeader(response, "refreshToken", refreshToken, 604800);
+            addCookieHeader(response, "accessToken", accessToken, (int) accessAge);
+            addCookieHeader(response, "refreshToken", refreshToken, (int) refreshAge);
 
             // 5. 닉네임을 응답 헤더나 바디에 담아 전달 (정보 불러오기 방식 전환 - 추후 삭제)
 //            String encodedNickname = URLEncoder.encode(member.getNickname(), StandardCharsets.UTF_8.toString());
@@ -132,6 +135,9 @@ public class AuthController {
             @CookieValue(name = "refreshToken", required = false) String refreshToken,
             HttpServletResponse response) {
 
+        long accessAge = tokenProvider.getAccessTokenValidityInSeconds();
+        long refreshAge = tokenProvider.getRefreshTokenValidityInSeconds();
+
         if (refreshToken == null) {
             return new ResponseEntity<>("Refresh Token이 없습니다.", HttpStatus.UNAUTHORIZED);
         }
@@ -164,8 +170,8 @@ public class AuthController {
             memberService.updateRefreshToken(providerId, newRefreshToken);
 
             // 5. 새 Access Token 및 Refresh Token 쿠키에 담아 반환 (기존 쿠키 덮어쓰기)
-            addCookieHeader(response, "accessToken", newAccessToken, 3600);
-            addCookieHeader(response, "refreshToken", newRefreshToken, 604800); // ⭐️ 새 Refresh Token도 쿠키에 담기
+            addCookieHeader(response, "accessToken", newAccessToken, (int) accessAge);
+            addCookieHeader(response, "refreshToken", newRefreshToken, (int) refreshAge); // ⭐️ 새 Refresh Token도 쿠키에 담기
 
             return ResponseEntity.ok("Access Token이 성공적으로 재발급되었습니다.");
 

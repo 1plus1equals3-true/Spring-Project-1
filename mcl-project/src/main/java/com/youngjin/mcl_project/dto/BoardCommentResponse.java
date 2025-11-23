@@ -1,5 +1,6 @@
 package com.youngjin.mcl_project.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.youngjin.mcl_project.entity.BoardCommentEntity;
 import lombok.Builder;
 import lombok.Data;
@@ -22,6 +23,8 @@ public class BoardCommentResponse {
     private String ment;
     private LocalDateTime regdate;
     private LocalDateTime moddate;
+
+    @JsonProperty("isDeleted")
     private boolean isDeleted;
 
     // ⭐️ 계층형 구조를 위한 대댓글 목록

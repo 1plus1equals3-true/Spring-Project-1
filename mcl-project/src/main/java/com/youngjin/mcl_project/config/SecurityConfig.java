@@ -66,8 +66,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/v1/auth/check-userid").permitAll()
                 // GET /api/v1/auth/check-nickname (닉네임 중복 확인)
                 .requestMatchers(HttpMethod.GET, "/api/v1/auth/check-nickname").permitAll()
-                // (토큰으로 자기 정보 호출)
-                .requestMatchers(HttpMethod.GET, "/api/v1/auth/me").permitAll()
+                // 토큰으로 자신의 정보 호출
+                .requestMatchers(HttpMethod.GET, "/api/v1/auth/me").authenticated()
                 // 토큰 재발급 및 로그아웃 POST 허용
                 .requestMatchers(HttpMethod.POST, "/api/v1/auth/reissue").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/auth/logout").permitAll()

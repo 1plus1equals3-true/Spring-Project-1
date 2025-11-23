@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
+import apiClient from "../api/apiClient";
 import MainLayout from "../components/layout/MainLayout";
 import BoardHeader from "../components/layout/BoardHeader";
 import TextEditor from "../components/sections/TiptapComponent";
@@ -85,8 +85,8 @@ const BoardEditorPage: React.FC = () => {
     setLoading(true);
     setInitialLoadError(null);
     try {
-      const response = await axios.get<BoardDetailResponse>(
-        `${API_BASE_URL}/api/v1/board/${postId}`
+      const response = await apiClient.get<BoardDetailResponse>(
+        `/api/v1/board/${postId}`
       );
       const post = response.data;
 
@@ -158,9 +158,7 @@ const BoardEditorPage: React.FC = () => {
           ...commonData,
         };
 
-        await axios.put(`${API_BASE_URL}/api/v1/board/update`, postData, {
-          withCredentials: true,
-        });
+        await apiClient.put(`/api/v1/board/update`, postData);
 
         setMessage({
           type: "success",
@@ -176,10 +174,9 @@ const BoardEditorPage: React.FC = () => {
           ...commonData,
         };
 
-        const response = await axios.post<number>(
-          `${API_BASE_URL}/api/v1/board/create`,
-          postData,
-          { withCredentials: true }
+        const response = await apiClient.post<number>(
+          `/api/v1/board/create`,
+          postData
         );
 
         // 백엔드가 Long(ID)을 바로 반환하므로 response.data가 ID입니다.

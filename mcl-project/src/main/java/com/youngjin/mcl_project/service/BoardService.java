@@ -5,10 +5,9 @@ import com.youngjin.mcl_project.entity.BoardAttachmentsEntity;
 import com.youngjin.mcl_project.entity.BoardAttachmentsEntity.FileStatus;
 import com.youngjin.mcl_project.entity.BoardEntity;
 import com.youngjin.mcl_project.entity.BoardEntity.BoardType;
-import com.youngjin.mcl_project.repository.BoardAttachmentsRepository;
-import com.youngjin.mcl_project.repository.BoardCommentRepository;
-import com.youngjin.mcl_project.repository.BoardRepository;
-import com.youngjin.mcl_project.repository.MemberRepository;
+import com.youngjin.mcl_project.entity.MemberEntity;
+import com.youngjin.mcl_project.entity.BoardRecommendEntity;
+import com.youngjin.mcl_project.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -37,6 +36,7 @@ public class BoardService {
     private final MemberRepository memberRepository;
     private final BoardCommentRepository commentRepository;
     private final BoardAttachmentsRepository attachmentsRepository;
+    private final BoardRecommendRepository boardRecommendRepository;
 
     @Value("${file.upload.base-dir}")
     private String BASE_DIR;
@@ -85,35 +85,46 @@ public class BoardService {
     }
 
     /**
-     * 게시글 상세 정보를 조회하고 DTO로 변환하여 반환합니다.
-     * 이 함수는 조회수 증가 로직을 포함해야 합니다.
-     *
+     * 게시글 상세 정보를 조회합니다.
      * @param idx 게시글 ID
-     * @return BoardDetailResponse DTO
-     * @throws IllegalArgumentException 게시글이 존재하지 않을 경우
+     * @param currentProviderId 현재 로그인한 사용자 ID (없으면 null)
      */
     @Transactional
-    public BoardDetailResponse getBoardDetail(long idx) {
+    public BoardDetailResponse getBoardDetail(long idx, String currentProviderId) {
 
-        // 1. Repository를 통해 게시글 조회 (isDeleted=false인 것만)
+        // 1. 게시글 조회
         BoardEntity entity = boardRepository.findByIdxAndIsDeletedFalse(idx);
-
         if (entity == null) {
             throw new IllegalArgumentException("존재하지 않거나 삭제된 게시글입니다. ID: " + idx);
         }
 
-        // 2. 조회수 증가 (트랜잭션 내에서 처리)
+        // 2. 조회수 증가
         entity.setHit(entity.getHit() + 1);
 
-        // 3. Entity를 DTO로 변환
+        // 3. 닉네임 조회
         String nickname = memberRepository.findNicknameByIdx(entity.getMemberIdx())
                 .orElse("알 수 없음");
 
+        // 4. 첨부파일 조회
         List<FileAttachmentResponse> attachments = attachmentsRepository
                 .findAllByBoardIdxAndStatus(idx, FileStatus.ACTIVE)
                 .stream()
                 .map(FileAttachmentResponse::fromEntity)
                 .toList();
+
+        // ⭐️ 5. [핵심] 내가 추천했는지 확인 로직
+        boolean isRecommended = false;
+
+        // 로그인한 사용자라면 DB 확인
+        if (currentProviderId != null) {
+            // providerId로 멤버 엔티티를 찾고
+            MemberEntity member = memberRepository.findByProviderId(currentProviderId).orElse(null);
+
+            // 멤버가 존재하면 추천 여부 확인
+            if (member != null) {
+                isRecommended = boardRecommendRepository.existsByMemberAndBoard(member, entity);
+            }
+        }
 
         return BoardDetailResponse.builder()
                 .idx(entity.getIdx())
@@ -121,11 +132,12 @@ public class BoardService {
                 .title(entity.getTitle())
                 .content(entity.getContent())
                 .hit(entity.getHit())
-                .recommend(entity.getRecommend())
+                .recommend(entity.getRecommend()) // 총 개수
                 .regdate(entity.getRegdate())
                 .moddate(entity.getModdate())
                 .authorNickname(nickname)
                 .attachments(attachments)
+                .isRecommended(isRecommended) // ⭐️ true/false 전달
                 .build();
     }
 
@@ -319,5 +331,39 @@ public class BoardService {
         System.out.println("게시글 ID " + idx + "에서 TEMP로 리셋된 파일 수: " + fileResetCount);
 
         // 💡 주의: 실제 물리적 파일 삭제는 별도의 스케줄러 서비스에서 TEMP 상태의 파일을 주기적으로 처리해야 합니다.
+    }
+
+    @Transactional
+    public String toggleRecommendation(Long boardIdx, String providerId) {
+        // 1. 게시글 조회
+        BoardEntity board = boardRepository.findById(boardIdx)
+                .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
+
+        // 2. 회원 조회 (로그인한 사용자)
+        MemberEntity member = memberRepository.findByProviderId(providerId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자 정보를 찾을 수 없습니다."));
+
+        // 3. 이미 추천했는지 확인
+        if (boardRecommendRepository.existsByMemberAndBoard(member, board)) {
+            // 3-1. 이미 추천했다면 -> 추천 취소 (삭제)
+            BoardRecommendEntity recommend = boardRecommendRepository.findByMemberAndBoard(member, board)
+                    .orElseThrow(() -> new IllegalArgumentException("추천 정보를 찾을 수 없습니다."));
+
+            boardRecommendRepository.delete(recommend);
+            board.decreaseRecommend(); // 게시글 테이블의 숫자도 줄임
+
+            return "추천이 취소되었습니다.";
+        } else {
+            // 3-2. 추천하지 않았다면 -> 추천 저장
+            BoardRecommendEntity recommend = BoardRecommendEntity.builder()
+                    .member(member)
+                    .board(board)
+                    .build();
+
+            boardRecommendRepository.save(recommend);
+            board.increaseRecommend(); // 게시글 테이블의 숫자도 늘림
+
+            return "추천하였습니다.";
+        }
     }
 }

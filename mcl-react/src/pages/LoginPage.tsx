@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import apiClient from "../api/apiClient";
 import { API_BASE_URL } from "../config/defaultconfig";
 import { useAuth } from "../context/AuthContext";
 import Header from "../components/layout/Header";
@@ -20,33 +21,20 @@ const LoginPage: React.FC = () => {
     window.location.href = `${API_BASE_URL}/oauth2/authorization/${provider}`;
   };
 
-  // 2. 로컬 로그인 폼 제출 핸들러 (API 연동)
+  // 2. 로컬 로그인 폼 제출 핸들러
   const handleLocalLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(""); // 기존 오류 메시지 초기화
 
     try {
-      const response = await axios.post(
-        `${API_BASE_URL}/api/v1/auth/login`,
-        { userid, pwd }, // JSON 형식으로 아이디/비밀번호 전송
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-          // JWT 토큰이 HttpOnly 쿠키로 오기 때문에, withCredentials는 필수
-          withCredentials: true,
-        }
-      );
+      const response = await apiClient.post(`/api/v1/auth/login`, {
+        userid,
+        pwd,
+      });
 
-      // HTTP 상태 코드 200 (OK)
       if (response.status === 200) {
-        // ⭐️ 기존: 닉네임 헤더 추출 및 login(nickname) 호출 로직 제거
-        // 토큰이 HttpOnly 쿠키로 성공적으로 설정되었으므로,
-        // Context의 refreshUser 함수를 호출하여 /me API로 사용자 정보를 로드하고 상태를 업데이트합니다.
         await refreshUser();
-
-        // 3. 홈 페이지로 이동
         navigate("/");
       }
     } catch (error) {

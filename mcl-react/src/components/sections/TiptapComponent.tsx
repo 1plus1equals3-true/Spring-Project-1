@@ -10,7 +10,7 @@ import OrderedList from "@tiptap/extension-ordered-list";
 import Underline from "@tiptap/extension-underline";
 import Link from "@tiptap/extension-link";
 import Image from "@tiptap/extension-image";
-import axios from "axios";
+import apiClient from "../../api/apiClient";
 import { API_BASE_URL } from "../../config/defaultconfig";
 
 import "../../styles/TiptapComponent.css";
@@ -232,13 +232,11 @@ const TextEditor: React.FC<TextEditorProps> = ({
     formData.append("file", file);
 
     try {
-      // 백엔드 API 호출 (비동기 저장)
-      const response = await axios.post(
-        `${API_BASE_URL}/api/v1/board/image-upload`,
+      const response = await apiClient.post(
+        `/api/v1/board/image-upload`,
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
-          withCredentials: true, // 인증 쿠키/세션 전달
         }
       );
 

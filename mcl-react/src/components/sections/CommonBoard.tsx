@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { API_BASE_URL } from "../../config/defaultconfig";
+import apiClient from "../../api/apiClient";
 import { Loader2, AlertCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import "../../styles/CommonBoard.css";
@@ -70,8 +70,8 @@ const CommonBoard: React.FC<CommonBoardProps> = ({
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get<BoardListResponse>(
-        `${API_BASE_URL}/api/v1/board/list?type=${boardType}&size=10&page=${page}`
+      const response = await apiClient.get<BoardListResponse>(
+        `/api/v1/board/list?type=${boardType}&size=10&page=${page}`
       );
 
       const responseData = response.data;

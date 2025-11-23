@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
-import apiClient from "../api/apiClient"; // Axios 인스턴스 (withCredentials 설정 가정)
+import apiClient from "../api/apiClient";
 
 // 1. Context 데이터 타입 정의
 export interface UserInfo {
@@ -46,26 +46,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     });
   };
 
-  // 백엔드의 /me 엔드포인트를 호출하여 사용자 정보를 가져오는 함수
   const fetchUserInfo = async () => {
-    setIsLoading(true); // 정보 로딩 시작
+    setIsLoading(true);
     try {
-      // 호출
       const response = await apiClient.get<UserInfo>("/api/v1/auth/me");
-
-      // ⭐️ 성공적으로 200 응답이 오면, 사용자 정보를 저장
       setUser(response.data);
     } catch (error) {
-      // 401 Unauthorized 등으로 실패하면, 토큰이 없거나 만료된 것으로 간주
-      // 사용자 정보를 null로 초기화 (로그아웃 상태)
+      // 401은 비로그인 상태이므로 에러가 아님 (정상 흐름)
+      // 따라서 console.error를 찍지 않고 조용히 넘어갑니다.
       setUser(null);
-      // console.error("인증 상태 확인 실패 (쿠키 만료 등)", error); // 불필요한 에러 로그는 제외
     } finally {
-      setIsLoading(false); // 로딩 종료
+      setIsLoading(false);
     }
   };
 
-  // 4. 컴포넌트 마운트 시 최초 인증 상태 확인
   useEffect(() => {
     fetchUserInfo();
   }, []);

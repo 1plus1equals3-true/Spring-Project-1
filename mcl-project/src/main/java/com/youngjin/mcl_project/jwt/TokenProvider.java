@@ -31,8 +31,7 @@ public class TokenProvider {
     // 생성자를 통해 모든 값을 @Value로 주입받도록 강제
     public TokenProvider(
             @Value("${jwt.secret}") String secretKey,
-            @Value("${jwt.access-token-validity-in-seconds:10}") long accessValidityInSeconds,
-            // *** 키 이름 변경 및 기본값 설정 ***
+            @Value("${jwt.access-token-validity-in-seconds:1800}") long accessValidityInSeconds,
             @Value("${jwt.refresh-token-validity-in-days:7}") long refreshValidityInDays
     ) {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
@@ -137,5 +136,13 @@ public class TokenProvider {
             log.info("JWT 토큰이 잘못되었습니다.");
         }
         return false;
+    }
+
+    public long getAccessTokenValidityInSeconds() {
+        return this.accessTokenValidityInMilliseconds / 1000;
+    }
+
+    public long getRefreshTokenValidityInSeconds() {
+        return this.refreshValidityInSeconds;
     }
 }
