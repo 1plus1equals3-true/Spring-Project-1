@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useCallback, useRef } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import MainLayout from "../components/layout/MainLayout";
 import { useAuth } from "../context/AuthContext";
 import type { UserInfo } from "../context/AuthContext";
@@ -542,32 +542,15 @@ const PlaceholderContent: React.FC<{ tabName: string }> = ({ tabName }) => (
 
 const MyPage: React.FC = () => {
   // useAuth에서 updateUser 함수를 추가로 받아와 ProfileEditContent에 전달합니다.
-  const { isLoggedIn, user, isLoading, updateUser } = useAuth();
-  const navigate = useNavigate();
+  const { user, updateUser } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
 
   // URL에서 현재 탭을 가져오거나, 없으면 'dashboard'를 기본값으로 사용합니다.
   const activeTabKey = searchParams.get("tab") || "dashboard";
 
-  // 로그인 상태 확인 및 리디렉션 처리
-  React.useEffect(() => {
-    if (!isLoading && !isLoggedIn) {
-      // 사용자 정보 로딩 완료 후, 로그인되지 않았다면 로그인 페이지로 이동
-      navigate("/login");
-    }
-  }, [isLoggedIn, isLoading, navigate]);
-
-  if (isLoading || !isLoggedIn || !user) {
-    // 로딩 중이거나 로그인되지 않은 경우 (리디렉션 전)
-    return (
-      <MainLayout>
-        <div className="text-center p-8">
-          <p className="text-lg font-medium text-gray-600">
-            인증 정보 확인 중...
-          </p>
-        </div>
-      </MainLayout>
-    );
+  // 타입 가드
+  if (!user) {
+    return null;
   }
 
   // 탭 클릭 핸들러: URL의 'tab' 파라미터 변경

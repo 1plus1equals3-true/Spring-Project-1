@@ -1,0 +1,26 @@
+/* ProtectedRoute.css */
+
+/* 화면 전체 중앙 정렬 (flex, h-screen 대응) */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; /* 뷰포트 높이 100% */
+  width: 100%;
+}
+
+/* 스피너 스타일 (text-indigo-600, animate-spin 대응) */
+.loading-spinner {
+  color: #4f46e5; /* Indigo 600 색상 코드 */
+  animation: spin 1s linear infinite; /* 1초마다 무한 회전 */
+}
+
+/* 회전 애니메이션 키프레임 정의 */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

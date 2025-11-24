@@ -1,4 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import ProtectedRoute from "./components/auth/ProtectedRoute"; // SecurityConfig같은 라이터 설정
+
 import Home from "./pages/Home";
 import LoginPage from "./pages/LoginPage";
 import OAuthRedirectHandler from "./components/auth/OauthRedirectHandler";
@@ -18,17 +20,41 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <Routes>
+          {/* ==========================================
+              1. 누구나 접근 가능한 공개 페이지 (Public)
+          ========================================== */}
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/mypage" element={<MyPage />} />
-          <Route path="/board/notice" element={<NoticePage />} />
-          <Route path="/board/free" element={<FreeBoardPage />} />
-          <Route path="/board/:type/write" element={<BoardEditorPage />} />
-          <Route path="/board/:type/:id/edit" element={<BoardEditorPage />} />
-          <Route path="/board/:type/:id" element={<BoardDetailPage />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/signup-success" element={<SignupSuccessPage />} />
           <Route path="/oauth/callback" element={<OAuthRedirectHandler />} />
+
+          {/* 게시판 목록 및 상세 조회는 비회원도 가능 */}
+          <Route path="/board/notice" element={<NoticePage />} />
+          <Route path="/board/free" element={<FreeBoardPage />} />
+          <Route path="/board/:type/:id" element={<BoardDetailPage />} />
+
+          {/* ==========================================
+              2. 로그인한 유저만 접근 가능한 페이지 (User)
+          ========================================== */}
+          <Route element={<ProtectedRoute requireAuth={true} />}>
+            <Route path="/mypage" element={<MyPage />} />
+
+            {/* 작성 페이지의 공지 여부는 자동으로 검사 */}
+            <Route path="/board/:type/write" element={<BoardEditorPage />} />
+            <Route path="/board/:type/:id/edit" element={<BoardEditorPage />} />
+          </Route>
+
+          {/* ==========================================
+              3. 관리자 전용 페이지 (Admin)
+          ========================================== */}
+          <Route element={<ProtectedRoute requireAdmin={true} />}>
+            {/* 예시: <Route path="/admin/stats" element={<AdminStatsPage />} /> */}
+          </Route>
+
+          {/* ==========================================
+              4. 404 페이지
+          ========================================== */}
           <Route path="*" element={<h1>404 Not Found</h1>} />
         </Routes>
       </AuthProvider>

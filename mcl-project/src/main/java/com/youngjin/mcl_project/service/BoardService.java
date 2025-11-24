@@ -203,10 +203,22 @@ public class BoardService {
      *
      * @param request 게시글 작성 요청 DTO
      * @param memberIdx 현재 로그인된 사용자 ID (Security Context 등에서 가져옴)
+     * @param ipAddress 사용자 IP 주소
      * @return 생성된 게시글의 ID (PK)
      */
     @Transactional
     public long createBoard(BoardCreationRequest request, long memberIdx, String ipAddress) {
+
+        // 작성자 정보 조회 (권한 확인용)
+        MemberEntity member = memberRepository.findById(memberIdx)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+
+        // 공지사항 작성 권한 확인 (관리자만 가능)
+        if (request.getBoardType() == BoardType.NOTICE) {
+            if (member.getGrade() < 9) {
+                throw new IllegalArgumentException("공지사항은 관리자만 작성할 수 있습니다.");
+            }
+        }
 
         // 1. BoardEntity 생성 및 저장
         BoardEntity boardEntity = BoardEntity.builder()
@@ -218,7 +230,7 @@ public class BoardService {
                 .recommend(0)
                 .regdate(LocalDateTime.now())
                 .ip(ipAddress)
-                .isDeleted(false) // 초기에는 삭제되지 않은 상태
+                .isDeleted(false)
                 .build();
 
         BoardEntity savedEntity = boardRepository.save(boardEntity);
