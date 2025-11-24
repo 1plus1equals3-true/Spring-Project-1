@@ -1,0 +1,52 @@
+export const POKE_TYPES = {
+  normal: "노말",
+  fighting: "격투",
+  flying: "비행",
+  poison: "독",
+  ground: "땅",
+  rock: "바위",
+  bug: "벌레",
+  ghost: "고스트",
+  steel: "강철",
+  fire: "불꽃",
+  water: "물",
+  grass: "풀",
+  electric: "전기",
+  psychic: "에스퍼",
+  ice: "얼음",
+  dragon: "드래곤",
+  dark: "악",
+  fairy: "페어리",
+};
+
+export const POKE_NATURES = {
+  Hardy: "노력",
+  Lonely: "외로움",
+  Adamant: "고집",
+  Naughty: "개구쟁이",
+  Brave: "용감",
+
+  Bold: "대담",
+  Docile: "온순",
+  Impish: "장난꾸러기",
+  Lax: "촐랑",
+  Relaxed: "무사태평",
+
+  Modest: "조심",
+  Mild: "의젓",
+  Bashful: "수줍음",
+  Rash: "덜렁",
+  Quiet: "냉정",
+
+  Calm: "차분",
+  Gentle: "얌전",
+  Careful: "신중",
+  Quirky: "변덕",
+  Sassy: "건방",
+
+  Timid: "겁쟁이",
+  Hasty: "성급",
+  Jolly: "명랑",
+  Naive: "천진난만",
+  Serious: "성실",
+};

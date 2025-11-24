@@ -73,6 +73,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/v1/auth/logout").permitAll()
                 // 모든 게시판 기능 불러오기
                 .requestMatchers("/api/v1/board/**").permitAll()
+                // 포켓몬 샘플 기능 불러오기
+                .requestMatchers("/api/v1/poke-sample/**").permitAll()
                 // 모든 이미지 불러오기
                 .requestMatchers(HttpMethod.GET, "/api/images/**").permitAll()
                 // 에러 페이지 허용

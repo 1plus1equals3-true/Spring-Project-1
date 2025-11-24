@@ -1,6 +1,7 @@
 package com.youngjin.mcl_project.dto;
 
-import com.youngjin.mcl_project.entity.PokeSample;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.youngjin.mcl_project.entity.PokeSampleEntity;
 import com.youngjin.mcl_project.enums.Visibility;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -44,11 +45,14 @@ public class PokeSampleResponseDTO {
     private Integer hit;       // 조회수
 
     // 로그인한 사용자의 상태
+    @JsonProperty("isLiked")
     private boolean isLiked;   // 내가 좋아요 눌렀는지?
+
+    @JsonProperty("isMine")
     private boolean isMine;    // 내 글인지? (프론트 수정/삭제 버튼 제어용)
 
     // Entity -> DTO 변환 생성자 (Service에서 깔끔하게 쓰기 위해)
-    public static PokeSampleResponseDTO fromEntity(PokeSample entity, String nickname, boolean isLiked, boolean isMine) {
+    public static PokeSampleResponseDTO fromEntity(PokeSampleEntity entity, String nickname, boolean isLiked, boolean isMine) {
         return PokeSampleResponseDTO.builder()
                 .idx(entity.getIdx())
                 .authorNickname(nickname) // 닉네임 주입

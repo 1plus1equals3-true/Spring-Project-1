@@ -7,6 +7,7 @@ import com.youngjin.mcl_project.service.PokeSampleService;
 import com.youngjin.mcl_project.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +16,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/poke")
+@RequestMapping("/api/v1/poke-sample")
 @RequiredArgsConstructor
 public class PokeSampleController {
 
@@ -47,10 +48,15 @@ public class PokeSampleController {
 
     // --- 조회 API ---
 
-    @GetMapping("/list/{pokemonIdx}")
-    public ResponseEntity<List<PokeSampleResponseDTO>> getSamplesByPokemon(@PathVariable Integer pokemonIdx) {
-        // 조회는 비로그인도 가능하므로 인증 체크 X
-        return ResponseEntity.ok(pokeSampleService.getSamplesByPokemonId(pokemonIdx));
+    @GetMapping("/list")
+    public ResponseEntity<Page<PokeSampleResponseDTO>> getSamples(
+            @RequestParam(required = false) Integer pokemonIdx,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "0") int page, // 기본 0페이지
+            @RequestParam(defaultValue = "12") int size // 한 번에 12개씩 (그리드에 맞게)
+    ) {
+        Page<PokeSampleResponseDTO> result = pokeSampleService.getSamples(pokemonIdx, keyword, page, size);
+        return ResponseEntity.ok(result);
     }
 
     /**
@@ -142,6 +148,28 @@ public class PokeSampleController {
         } catch (Exception e) {
             log.error("삭제 중 오류", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류");
+        }
+    }
+
+    /**
+     * 좋아요 토글
+     * POST /api/v1/poke/like/{idx}
+     */
+    @PostMapping("/like/{idx}")
+    public ResponseEntity<Boolean> toggleLike(@PathVariable Long idx) {
+        String providerId = SecurityUtil.getCurrentProviderId();
+
+        if ("anonymousUser".equals(providerId)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        try {
+            // true(켜짐) 또는 false(꺼짐) 반환
+            boolean result = pokeSampleService.toggleLike(idx, providerId);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            log.error("좋아요 처리 실패", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 }

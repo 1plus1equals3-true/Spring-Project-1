@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString(exclude = "pokeSample") // 무한루프 방지
-public class PokeSampleLike {
+public class PokeSampleLikeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,7 +22,7 @@ public class PokeSampleLike {
     // 어떤 샘플인가
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sample_idx", nullable = false)
-    private PokeSample pokeSample;
+    private PokeSampleEntity pokeSample;
 
     // 누가 눌렀는가
     @Column(name = "member_idx", nullable = false)

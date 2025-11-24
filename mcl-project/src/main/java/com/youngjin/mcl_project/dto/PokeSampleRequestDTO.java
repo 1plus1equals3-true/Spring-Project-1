@@ -1,6 +1,6 @@
 package com.youngjin.mcl_project.dto;
 
-import com.youngjin.mcl_project.entity.PokeSample;
+import com.youngjin.mcl_project.entity.PokeSampleEntity;
 import com.youngjin.mcl_project.enums.Visibility;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -34,8 +34,8 @@ public class PokeSampleRequestDTO {
     private Visibility visibility; // PUBLIC or PRIVATE
 
     // DTO -> Entity 변환 메서드 (편의성)
-    public PokeSample toEntity() {
-        return PokeSample.builder()
+    public PokeSampleEntity toEntity() {
+        return PokeSampleEntity.builder()
                 .memberIdx(this.memberIdx)
                 .pokemonIdx(this.pokemonIdx)
                 .pokemonName(this.pokemonName)

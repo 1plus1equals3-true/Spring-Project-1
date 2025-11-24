@@ -21,7 +21,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @ToString
 @DynamicInsert // insert 시 null인 필드는 제외 -> DB의 Default 값 적용됨
-public class PokeSample {
+public class PokeSampleEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -88,6 +88,11 @@ public class PokeSample {
     @UpdateTimestamp
     private LocalDateTime moddate;
 
+    // ⭐️ 추가: 삭제 여부 필드
+    @Column(name = "is_deleted", nullable = false)
+    @ColumnDefault("false") // 0
+    private boolean isDeleted;
+
     // --- 비즈니스 로직 편의 메서드 ---
 
     // 좋아요 수 증가
@@ -103,6 +108,10 @@ public class PokeSample {
     // 조회수 증가
     public void increaseHit() {
         this.hit++;
+    }
+
+    public void changeDeleted(boolean isDeleted) {
+        this.isDeleted = isDeleted;
     }
 
     public void updateSampleInfo(String teraType, String item, String nature, String ability,
