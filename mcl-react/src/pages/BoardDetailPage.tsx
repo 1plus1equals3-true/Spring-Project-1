@@ -64,6 +64,16 @@ interface CommentItemProps {
   formatDateTime: (date: string | number[] | undefined) => string;
 }
 
+// 부모가 리렌더링 되어도 content prop이 안 바뀌면 다시 그리지 않음 (이미지 재로딩 방지)
+const PostContent = React.memo(({ content }: { content: string }) => {
+  return (
+    <div
+      className="detail-content"
+      dangerouslySetInnerHTML={{ __html: content }}
+    />
+  );
+});
+
 // ⭐️ [핵심] 컴포넌트 밖으로 꺼낸 CommentItem
 // 이제 BoardDetailPage가 리렌더링 되어도 이 컴포넌트는 유지되므로 포커스가 안 끊깁니다.
 const CommentItem: React.FC<CommentItemProps> = ({
@@ -475,10 +485,12 @@ const BoardDetailPage: React.FC = () => {
         </div>
 
         <div className="detail-content-wrapper">
-          <div
+          {/* 기존 코드 (PostContent로 대체) */}
+          {/* <div
             className="detail-content"
             dangerouslySetInnerHTML={{ __html: post.content }}
-          />
+          /> */}
+          <PostContent content={post.content} />
           <div className="detail-stats">
             <button
               onClick={handleRecommend}

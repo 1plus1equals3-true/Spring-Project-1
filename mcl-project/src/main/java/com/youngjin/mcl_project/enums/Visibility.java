@@ -1,4 +1,4 @@
-package com.youngjin.mcl_project.enums; // 패키지 분리 추천
+package com.youngjin.mcl_project.enums;
 
 public enum Visibility {
     PUBLIC,

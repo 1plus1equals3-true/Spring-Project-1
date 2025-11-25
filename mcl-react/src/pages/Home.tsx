@@ -7,7 +7,7 @@ import PostNoticeSection from "../components/sections/HomeNoticeSection";
 import ReviewCardSection from "../components/sections/ReviewCardSection";
 import apiClient from "../api/apiClient";
 import axios from "axios";
-import { Archive, Loader2, AlertCircle } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
 
 import "../styles/main.css";
 
@@ -42,14 +42,6 @@ interface ReviewCard {
   title: string;
   info: string;
 }
-
-const noticeData: BoardItem[] = [
-  // { id: 1, title: "[필독] 개인정보 처리방침 개정 안내", date: "2025.10.29" },
-  // { id: 2,title: "서버 점검 및 업데이트 일정 공지 (11/5)",date: "2025.10.25", },
-];
-const myCollectionData: BoardItem[] = [];
-const freeBoardData: BoardItem[] = [];
-const bestReviewData: ReviewCard[] = [];
 
 // ==============================================================
 

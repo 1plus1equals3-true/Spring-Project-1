@@ -128,9 +128,6 @@ const Sidebar: React.FC = () => {
         <Link to="/board/free" className="nav-item">
           🏡 자유게시판
         </Link>
-        <Link to="/board/review" className="nav-item">
-          ⭐ 리뷰 게시판
-        </Link>
       </nav>
       <h2 style={{ marginTop: "20px" }}>📝 일지</h2>
       <nav className="main-nav">

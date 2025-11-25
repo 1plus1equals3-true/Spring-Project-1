@@ -3,14 +3,20 @@ import { useParams, useNavigate } from "react-router-dom";
 import apiClient from "../api/apiClient";
 import MainLayout from "../components/layout/MainLayout";
 import BoardHeader from "../components/layout/BoardHeader";
-import { Loader2, Save, X } from "lucide-react"; // 아이콘 사용
-import { POKE_NATURES, POKE_TYPES } from "../assets/tsx/PokeData";
+import StatEditor from "../components/sections/StatEditor";
+import { Loader2, Save, X } from "lucide-react";
+import { POKE_NATURES, POKE_TYPES, POKE_ITEMS } from "../assets/tsx/PokeData";
+import {
+  POKEMON_NAME_MAP,
+  ABILITY_MAP,
+  MOVE_MAP,
+} from "../assets/tsx/PokeData";
 
-import "../styles/PokeSampleEditor.css"; // 스타일 파일 import
+import "../styles/PokeSampleEditor.css";
 
-// DTO 정의 (백엔드와 일치)
+// DTO 정의
 interface PokeSampleRequestDTO {
-  memberIdx?: number; // Controller에서 처리하므로 전송시엔 필요 없을수도 있음
+  memberIdx?: number;
   pokemonIdx: number;
   pokemonName: string;
   teraType: string;
@@ -28,24 +34,36 @@ interface PokeSampleRequestDTO {
 }
 
 const PokeSampleEditorPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>(); // id가 있으면 수정 모드
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const isEditMode = !!id;
 
-  // --- State 관리 ---
+  // --- State ---
   const [loading, setLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // 폼 데이터 (초기값)
+  // API로 받아온 기술/특성 목록
+  const [availableMoves, setAvailableMoves] = useState<
+    { name: string; url: string }[]
+  >([]);
+  const [availableAbilities, setAvailableAbilities] = useState<
+    { name: string; url: string }[]
+  >([]);
+
+  // 검색어 및 자동완성 UI 제어
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  // 폼 데이터
   const [formData, setFormData] = useState<PokeSampleRequestDTO>({
-    pokemonIdx: 25, // 일단 피카츄 기본값 (추후 검색 모달 연동 필요)
+    pokemonIdx: 25,
     pokemonName: "",
     teraType: "",
     item: "",
     nature: "",
     ability: "",
-    ivs: "31/31/31/x/31/31", // 자주 쓰는 V/Z 표기 기본값
-    evs: "H4 A252 S252",
+    ivs: "31/31/31/31/31/31",
+    evs: "",
     move1: "",
     move2: "",
     move3: "",
@@ -54,7 +72,7 @@ const PokeSampleEditorPage: React.FC = () => {
     visibility: "PUBLIC",
   });
 
-  // 입력 핸들러 (모든 input 공용)
+  // 공통 입력 핸들러
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -64,7 +82,79 @@ const PokeSampleEditorPage: React.FC = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // --- 데이터 불러오기 (수정 모드) ---
+  // ⭐️ [수정] 검색어 변경 핸들러 (초기화 로직 추가)
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+    setShowSuggestions(true);
+
+    // 검색어를 다 지우면 -> 초기화 (검색 필요 상태로 복귀)
+    if (value.trim() === "") {
+      setAvailableMoves([]);
+      setAvailableAbilities([]);
+      setFormData((prev) => ({
+        ...prev,
+        pokemonName: "",
+        ability: "",
+        move1: "",
+        move2: "",
+        move3: "",
+        move4: "",
+      }));
+    }
+  };
+
+  // 포켓몬 선택 핸들러
+  const handleSelectPokemon = async (korName: string) => {
+    const engName = POKEMON_NAME_MAP[korName];
+    if (!engName) return;
+
+    setSearchTerm(korName);
+    setShowSuggestions(false);
+    setLoading(true);
+
+    try {
+      const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${engName}`);
+      if (!res.ok) throw new Error("PokeAPI 호출 실패");
+      const data = await res.json();
+
+      // 폼 데이터 업데이트
+      setFormData((prev) => ({
+        ...prev,
+        pokemonName: korName,
+        pokemonIdx: data.id,
+        ability: "", // 포켓몬 바뀌면 특성 초기화
+        move1: "", // 기술 초기화
+        move2: "",
+        move3: "",
+        move4: "",
+      }));
+
+      // 특성 목록 가공
+      const abilities = data.abilities.map((ab: any) => ({
+        name: ABILITY_MAP[ab.ability.name] || ab.ability.name,
+        url: ab.ability.url,
+      }));
+      setAvailableAbilities(abilities);
+
+      // 기술 목록 가공
+      const moves = data.moves
+        .map((mv: any) => ({
+          name: MOVE_MAP[mv.move.name] || mv.move.name,
+          url: mv.move.url,
+        }))
+        .sort((a: any, b: any) => a.name.localeCompare(b.name));
+
+      setAvailableMoves(moves);
+    } catch (error) {
+      console.error(error);
+      alert("포켓몬 정보를 불러오는데 실패했습니다.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // --- 수정 모드 데이터 로드 ---
   useEffect(() => {
     if (isEditMode && id) {
       const fetchSample = async () => {
@@ -72,7 +162,7 @@ const PokeSampleEditorPage: React.FC = () => {
         try {
           const res = await apiClient.get(`/api/v1/poke-sample/${id}`);
           const data = res.data;
-          // 응답 데이터를 폼 데이터 형식에 맞춰 매핑
+
           setFormData({
             pokemonIdx: data.pokemonIdx,
             pokemonName: data.pokemonName,
@@ -89,6 +179,11 @@ const PokeSampleEditorPage: React.FC = () => {
             description: data.description,
             visibility: data.visibility,
           });
+
+          setSearchTerm(data.pokemonName);
+
+          // ⚠️ 수정 모드에서도 기술 목록을 불러오려면 여기서 handleSelectPokemon 호출 필요
+          // (지금은 편의상 생략됨 -> 사용자가 검색창 클릭해서 다시 선택하면 갱신됨)
         } catch (err) {
           alert("샘플 정보를 불러오지 못했습니다.");
           navigate(-1);
@@ -104,13 +199,11 @@ const PokeSampleEditorPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 유효성 검사 (Validation) (상황에 맞게 추가하기)
     if (!formData.pokemonName) {
-      alert("포켓몬 이름을 입력해주세요.");
+      alert("포켓몬 이름을 입력(검색)해주세요.");
       return;
     }
     if (!formData.teraType) {
-      // "" 빈 문자열이면 false 취급됨
       alert("테라스탈 타입을 선택해주세요.");
       return;
     }
@@ -119,28 +212,33 @@ const PokeSampleEditorPage: React.FC = () => {
       return;
     }
     if (!formData.move1) {
-      alert("최소 1개의 기술은 입력해야 합니다.");
+      alert("최소 1개의 기술은 선택해야 합니다.");
       return;
     }
 
     setIsSubmitting(true);
     try {
       if (isEditMode && id) {
-        // 수정 (PUT)
         await apiClient.put(`/api/v1/poke-sample/${id}`, formData);
         alert("샘플이 수정되었습니다!");
-        navigate(`/poke-sample/${id}`); // 상세 페이지로 이동
+        navigate(`/poke-sample/${id}`);
       } else {
-        // 작성 (POST)
         const res = await apiClient.post("/api/v1/poke-sample", formData);
         alert("새로운 샘플이 등록되었습니다!");
-        navigate(`/poke-sample/${res.data}`); // 생성된 상세 페이지로 이동
+        navigate(`/poke-sample/${res.data}`);
       }
     } catch (err) {
       console.error(err);
       alert("저장에 실패했습니다.");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const preventEnterKey = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      if (e.target instanceof HTMLTextAreaElement) return;
+      e.preventDefault();
     }
   };
 
@@ -162,32 +260,49 @@ const PokeSampleEditorPage: React.FC = () => {
           description="나만의 포켓몬 실전 샘플을 공유해보세요."
         />
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} onKeyDown={preventEnterKey}>
           {/* 1. 기본 정보 섹션 */}
           <div className="editor-section">
             <div className="section-title">📌 기본 정보</div>
+
             <div className="form-grid grid-2">
-              {/* 포켓몬 이름 (추후 자동완성/검색 기능 붙이면 좋음) */}
-              <div className="form-group">
-                <label className="form-label">포켓몬 이름</label>
+              <div className="form-group" style={{ position: "relative" }}>
+                <label className="form-label">포켓몬 검색</label>
                 <input
                   type="text"
-                  name="pokemonName"
-                  value={formData.pokemonName}
-                  onChange={handleChange}
-                  placeholder="예: 한카리아스"
+                  placeholder="포켓몬 이름 입력 (예: 리자몽)"
                   className="form-input"
+                  value={searchTerm}
+                  onChange={handleSearchChange} // ⭐️ 수정된 핸들러 연결
+                  onFocus={() => setShowSuggestions(true)}
                 />
+
+                {showSuggestions && searchTerm && (
+                  <ul className="autocomplete-list">
+                    {Object.keys(POKEMON_NAME_MAP)
+                      .filter((name) => name.includes(searchTerm))
+                      .slice(0, 5)
+                      .map((name) => (
+                        <li
+                          key={name}
+                          onClick={() => handleSelectPokemon(name)}
+                          className="autocomplete-item"
+                        >
+                          {name}
+                        </li>
+                      ))}
+                  </ul>
+                )}
               </div>
-              {/* 도감 번호 (임시: 직접 입력 or 이름 입력시 자동 검색 구현 예정) */}
+
               <div className="form-group">
-                <label className="form-label">도감 번호</label>
+                <label className="form-label">{/* 도감 번호 */}</label>
                 <input
-                  type="number"
+                  type="hidden"
                   name="pokemonIdx"
                   value={formData.pokemonIdx}
-                  onChange={handleChange}
-                  className="form-input"
+                  readOnly
+                  className="form-input bg-gray-100"
                 />
               </div>
             </div>
@@ -204,23 +319,29 @@ const PokeSampleEditorPage: React.FC = () => {
                   <option value="">타입 선택</option>
                   {Object.entries(POKE_TYPES).map(([eng, kor]) => (
                     <option key={eng} value={kor}>
-                      {kor}{" "}
-                      {/* 화면에는 '불꽃', '물' 처럼 한글만 깔끔하게 표시 */}
+                      {kor}
                     </option>
                   ))}
                 </select>
               </div>
+
               <div className="form-group">
                 <label className="form-label">지닌 도구</label>
-                <input
-                  type="text"
+                <select
                   name="item"
                   value={formData.item}
                   onChange={handleChange}
-                  placeholder="예: 구애머리띠"
-                  className="form-input"
-                />
+                  className="form-select"
+                >
+                  <option value="">도구 선택</option>
+                  {Object.entries(POKE_ITEMS).map(([eng, kor]) => (
+                    <option key={eng} value={kor}>
+                      {kor}
+                    </option>
+                  ))}
+                </select>
               </div>
+
               <div className="form-group">
                 <label className="form-label">성격</label>
                 <select
@@ -233,21 +354,37 @@ const PokeSampleEditorPage: React.FC = () => {
                   {Object.entries(POKE_NATURES).map(([eng, kor]) => (
                     <option key={eng} value={kor}>
                       {kor}
-                      {/* ({eng}) */}
                     </option>
                   ))}
                 </select>
               </div>
+
+              {/* ⭐️ 특성: 목록이 있으면 Select, 없으면 Input(Disabled) */}
               <div className="form-group">
                 <label className="form-label">특성</label>
-                <input
-                  type="text"
-                  name="ability"
-                  value={formData.ability}
-                  onChange={handleChange}
-                  placeholder="예: 까칠한피부"
-                  className="form-input"
-                />
+                {availableAbilities.length > 0 ? (
+                  <select
+                    name="ability"
+                    value={formData.ability}
+                    onChange={handleChange}
+                    className="form-select"
+                  >
+                    <option value="">특성 선택</option>
+                    {availableAbilities.map((ab) => (
+                      <option key={ab.name} value={ab.name}>
+                        {ab.name}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    value="특성 (검색 필요)"
+                    className="form-input bg-gray-100 text-gray-400"
+                    readOnly
+                    disabled
+                  />
+                )}
               </div>
             </div>
           </div>
@@ -257,52 +394,54 @@ const PokeSampleEditorPage: React.FC = () => {
             <div className="section-title">⚔️ 기술 배치</div>
             <div className="form-grid grid-2">
               {[1, 2, 3, 4].map((num) => (
-                <div key={num} className="form-group move-input-group">
-                  <span className="move-badge">Move {num}</span>
-                  <input
-                    type="text"
-                    name={`move${num}`}
-                    // @ts-ignore: 동적 키 접근
-                    value={formData[`move${num}`]}
-                    onChange={handleChange}
-                    placeholder="기술 이름"
-                    className="form-input move-input"
-                  />
+                <div key={num} className="form-group">
+                  <span className="move-badge-static">Move {num}</span>
+                  {availableMoves.length > 0 ? (
+                    <select
+                      name={`move${num}`}
+                      // @ts-ignore
+                      value={formData[`move${num}`]}
+                      onChange={handleChange}
+                      className="form-select"
+                    >
+                      <option value="">기술 선택</option>
+                      {availableMoves.map((mv) => (
+                        <option key={mv.name} value={mv.name}>
+                          {mv.name}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      value="기술 목록 (검색 필요)" // ⭐️ 안내 문구 변경
+                      className="form-input move-input bg-gray-100 text-gray-400"
+                      readOnly
+                      disabled
+                    />
+                  )}
                 </div>
               ))}
             </div>
           </div>
 
-          {/* 3. 노력치 및 개체값 */}
+          {/* 3. 스탯 설정 */}
           <div className="editor-section">
             <div className="section-title">📊 스탯 설정</div>
-            <div className="form-grid grid-2">
-              <div className="form-group">
-                <label className="form-label">개체값 (IVs)</label>
-                <input
-                  type="text"
-                  name="ivs"
-                  value={formData.ivs}
-                  onChange={handleChange}
-                  placeholder="예: 31/31/31/x/31/31"
-                  className="form-input"
-                />
-              </div>
-              <div className="form-group">
-                <label className="form-label">노력치 (EVs)</label>
-                <input
-                  type="text"
-                  name="evs"
-                  value={formData.evs}
-                  onChange={handleChange}
-                  placeholder="예: H4 A252 S252"
-                  className="form-input"
-                />
-              </div>
-            </div>
+            <StatEditor
+              ivs={formData.ivs}
+              evs={formData.evs}
+              onChange={(newIvs, newEvs) => {
+                setFormData((prev) => ({
+                  ...prev,
+                  ivs: newIvs,
+                  evs: newEvs,
+                }));
+              }}
+            />
           </div>
 
-          {/* 4. 상세 설명 및 설정 */}
+          {/* 4. 설명 및 설정 (기존 동일) */}
           <div className="editor-section">
             <div className="section-title">📝 운영법 및 설정</div>
             <div className="form-group">
@@ -316,7 +455,6 @@ const PokeSampleEditorPage: React.FC = () => {
                 className="form-textarea"
               />
             </div>
-
             <div className="form-group" style={{ marginTop: "16px" }}>
               <label className="form-label">공개 설정</label>
               <select

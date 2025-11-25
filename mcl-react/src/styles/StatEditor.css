@@ -1,0 +1,100 @@
+.stat-editor-box {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.stat-header {
+  display: grid;
+  grid-template-columns: 60px 100px 1fr;
+  font-weight: 700;
+  color: #4b5563;
+  margin-bottom: 12px;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.stat-row {
+  display: grid;
+  grid-template-columns: 60px 100px 1fr;
+  align-items: center;
+  margin-bottom: 8px;
+  gap: 10px;
+}
+
+.stat-label {
+  font-weight: 600;
+  color: #374151;
+  text-align: center;
+}
+
+/* IV Select */
+.iv-select {
+  width: 100%;
+  padding: 6px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  text-align: center;
+}
+.iv-select.best {
+  color: #dc2626; /* V일 때 붉은색 강조 */
+  font-weight: bold;
+}
+
+/* EV Controls */
+.ev-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ev-slider {
+  flex: 1;
+  cursor: pointer;
+}
+
+.ev-input {
+  width: 50px;
+  padding: 4px;
+  text-align: center;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+}
+
+.quick-btns {
+  display: flex;
+  gap: 4px;
+}
+
+.quick-btns button {
+  padding: 2px 6px;
+  font-size: 0.75rem;
+  border: 1px solid #d1d5db;
+  background: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.quick-btns button:hover {
+  background: #f3f4f6;
+}
+
+.text-red {
+  color: red;
+}
+
+/* 모바일 대응 */
+@media (max-width: 640px) {
+  .stat-header,
+  .stat-row {
+    grid-template-columns: 50px 70px 1fr;
+    gap: 6px;
+  }
+  .ev-slider {
+    display: none;
+  } /* 모바일에서 슬라이더 숨김 (공간 부족) */
+  .quick-btns button:nth-child(2) {
+    display: none;
+  } /* 4 버튼 숨김 */
+}
