@@ -117,10 +117,10 @@ const Sidebar: React.FC = () => {
           🌏 홈
         </Link>
         <Link to="/poke-sample/list" className="nav-item highlight">
-          🚀 내 컬렉션 정리하기
+          🚀 모두의 샘플
         </Link>
         <Link to="/my-collection" className="nav-item highlight">
-          🚀 내 컬렉션 정리하기
+          🚀 나만의 샘플
         </Link>
       </nav>
       <h2 style={{ marginTop: "20px" }}>📝 게시판</h2>

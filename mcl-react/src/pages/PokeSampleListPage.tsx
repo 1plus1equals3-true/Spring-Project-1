@@ -134,7 +134,7 @@ const PokeSampleListPage: React.FC = () => {
       <div className="sample-list-container">
         <div className="board-header">
           <h1 className="board-title">
-            {id ? `No.${id} 샘플 리스트` : "실전 샘플"}
+            {id ? `No.${id} 샘플 리스트` : "모두의 샘플"}
           </h1>
           <p className="board-desc">
             최신 메타와 다양한 전략을 확인하고 공유해보세요.

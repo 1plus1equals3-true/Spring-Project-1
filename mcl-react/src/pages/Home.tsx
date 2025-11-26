@@ -231,7 +231,7 @@ const Home: React.FC = () => {
   return (
     // 실제 랜더링
     <MainLayout>
-      <p>나만의 컬렉션을 정리하고, 자유롭게 이야기를 나눠보세요!</p>
+      {/* <p>나만의 컬렉션을 정리하고, 자유롭게 이야기를 나눠보세요!</p> */}
 
       <div className="content-grid">
         {/* 1. 공지사항 (Full Width) */}
