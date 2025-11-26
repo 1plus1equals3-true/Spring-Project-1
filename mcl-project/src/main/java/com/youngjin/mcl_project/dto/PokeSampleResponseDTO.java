@@ -43,6 +43,7 @@ public class PokeSampleResponseDTO {
     private LocalDateTime regdate;
     private LocalDateTime moddate;
     private Integer hit;       // 조회수
+    private Long commentCount;
 
     // 로그인한 사용자의 상태
     @JsonProperty("isLiked")
@@ -52,7 +53,7 @@ public class PokeSampleResponseDTO {
     private boolean isMine;    // 내 글인지? (프론트 수정/삭제 버튼 제어용)
 
     // Entity -> DTO 변환 생성자 (Service에서 깔끔하게 쓰기 위해)
-    public static PokeSampleResponseDTO fromEntity(PokeSampleEntity entity, String nickname, boolean isLiked, boolean isMine) {
+    public static PokeSampleResponseDTO fromEntity(PokeSampleEntity entity, String nickname, boolean isLiked, boolean isMine, Long commentCount) {
         return PokeSampleResponseDTO.builder()
                 .idx(entity.getIdx())
                 .authorNickname(nickname) // 닉네임 주입
@@ -72,6 +73,7 @@ public class PokeSampleResponseDTO {
                 .visibility(entity.getVisibility())
                 .likeCount(entity.getLikeCount())
                 .hit(entity.getHit()) // 조회수
+                .commentCount(commentCount)
                 .isLiked(isLiked)
                 .isMine(isMine)
                 .regdate(entity.getRegdate())

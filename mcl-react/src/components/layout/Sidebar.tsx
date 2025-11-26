@@ -116,6 +116,9 @@ const Sidebar: React.FC = () => {
         <Link to="/" className="nav-item highlight">
           🌏 홈
         </Link>
+        <Link to="/poke-sample/list" className="nav-item highlight">
+          🚀 내 컬렉션 정리하기
+        </Link>
         <Link to="/my-collection" className="nav-item highlight">
           🚀 내 컬렉션 정리하기
         </Link>

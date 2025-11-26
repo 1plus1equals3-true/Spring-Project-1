@@ -195,6 +195,65 @@
   white-space: pre-wrap; /* 줄바꿈 허용 */
 }
 
+/* 🔒 비공개 카드 스타일 */
+.sample-card.private-card {
+  background-color: #f9fafb; /* 아주 연한 회색 배경 */
+  border: 1px dashed #9ca3af; /* 점선 테두리 */
+  opacity: 0.9; /* 살짝 흐리게 (선택 사항) */
+}
+
+.sample-card.private-card:hover {
+  border-color: #6366f1; /* 호버 시 포인트 컬러 */
+  border-style: solid; /* 호버 시 실선으로 변경 (효과) */
+  background-color: #ffffff;
+  opacity: 1;
+}
+
+/* 🔒 비공개 상태 배지 (우측 상단) */
+.sample-card {
+  position: relative; /* 배지 위치 잡기 위해 */
+}
+
+.visibility-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+}
+
+.badge-private {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: #6b7280;
+  background-color: #e5e7eb;
+  padding: 4px 8px;
+  border-radius: 20px;
+}
+
+/* 디테일 페이지용 비공개 배지 */
+.badge-private-detail {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #6b7280;
+  background-color: #f3f4f6;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid #d1d5db;
+  vertical-align: middle;
+}
+
+/* (선택) 디테일 카드 자체에도 비공개 느낌 주기 */
+.private-detail-card {
+  border: 1px dashed #9ca3af; /* 점선 테두리 */
+  background-color: #fafafa; /* 아주 연한 회색 */
+}
+
 /* 반응형 */
 @media (max-width: 768px) {
   .moves-container {

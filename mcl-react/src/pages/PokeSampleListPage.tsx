@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import apiClient from "../api/apiClient";
 import MainLayout from "../components/layout/MainLayout";
+import { useAuth } from "../context/AuthContext";
 import {
   Loader2,
-  AlertCircle,
+  MessageSquare,
   Eye,
   Heart,
   Search,
@@ -29,6 +30,7 @@ interface PokeSampleResponseDTO {
   move4: string;
   hit: number;
   likeCount: number;
+  commentCount: number;
   regdate: string | number[];
 }
 
@@ -46,6 +48,7 @@ const PokeSampleListPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
 
   // 데이터 상태
   const [samples, setSamples] = useState<PokeSampleResponseDTO[]>([]);
@@ -131,7 +134,7 @@ const PokeSampleListPage: React.FC = () => {
       <div className="sample-list-container">
         <div className="board-header">
           <h1 className="board-title">
-            {id ? `No.${id} 샘플 리스트` : "실전 샘플 도감"}
+            {id ? `No.${id} 샘플 리스트` : "실전 샘플"}
           </h1>
           <p className="board-desc">
             최신 메타와 다양한 전략을 확인하고 공유해보세요.
@@ -239,6 +242,15 @@ const PokeSampleListPage: React.FC = () => {
                   >
                     <Heart size={14} /> {sample.likeCount}
                   </span>
+                  <span
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "4px",
+                    }}
+                  >
+                    <MessageSquare size={14} /> {sample.commentCount}
+                  </span>
                 </div>
               </div>
             </div>
@@ -262,7 +274,7 @@ const PokeSampleListPage: React.FC = () => {
           </div>
         )}
 
-        {/* ⭐️ [핵심] 더보기 버튼 (마지막 페이지가 아니고, 로딩중이 아닐 때만 표시) */}
+        {/* 더보기 버튼 (마지막 페이지가 아니고, 로딩중이 아닐 때만 표시) */}
         {!isLast && !loading && samples.length > 0 && (
           <div
             style={{
@@ -281,14 +293,17 @@ const PokeSampleListPage: React.FC = () => {
           </div>
         )}
 
-        <div className="write-btn-wrapper">
-          <button
-            className="write-btn"
-            onClick={() => navigate("/poke-sample/write")}
-          >
-            <span>✏️ 샘플 등록</span>
-          </button>
-        </div>
+        {/* ⭐️ 3. 로그인한 유저만 글쓰기 버튼 노출 */}
+        {user && (
+          <div className="write-btn-wrapper">
+            <button
+              className="write-btn"
+              onClick={() => navigate("/poke-sample/write")}
+            >
+              <span>✏️ 샘플 등록</span>
+            </button>
+          </div>
+        )}
       </div>
     </MainLayout>
   );

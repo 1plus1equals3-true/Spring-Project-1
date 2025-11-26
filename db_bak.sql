@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS `board` (
   PRIMARY KEY (`idx`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=32 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- 테이블 데이터 mcl_project.board:~29 rows (대략적) 내보내기
+-- 테이블 데이터 mcl_project.board:~31 rows (대략적) 내보내기
 INSERT INTO `board` (`idx`, `member_idx`, `board_type`, `title`, `content`, `hit`, `recommend`, `regdate`, `moddate`, `ip`, `is_deleted`) VALUES
 	(1, 8, 'FREE', '안녕하세요', '안녕안녕하세요', 3, 0, '2025-11-19 15:54:28', NULL, NULL, 0),
 	(2, 1, 'NOTICE', '[공지] 테스트 공지사항 입니다.', '안녕안녕하세요', 33, 0, '2025-11-19 15:54:28', NULL, NULL, 0),
@@ -59,11 +59,11 @@ INSERT INTO `board` (`idx`, `member_idx`, `board_type`, `title`, `content`, `hit
 	(24, 7, 'FREE', '123', '<p>123</p>', 12, 0, '2025-11-21 14:17:33', '2025-11-21 16:19:38', '127.0.0.1', 1),
 	(25, 7, 'FREE', 'ㅇㄴㅁㅇㅁㄴ', '<p>ㅇㄴㅁㅇㅇㅇ</p>', 24, 0, '2025-11-21 14:51:15', '2025-11-21 16:19:16', '127.0.0.1', 1),
 	(26, 9, 'FREE', '잠만보', '<p><img class="editor-image" src="https://localhost:8070/api/images/MCL/board/2025/11/23/1fb875e8-31e4-49a4-a338-44a1cf634a82.png">잠만보</p>', 36, 1, '2025-11-23 02:25:18', NULL, '127.0.0.1', 0),
-	(27, 9, 'FREE', '쿠키 만료 후 작성 테스트', '<p>테스트</p>', 211, 2, '2025-11-23 21:17:45', NULL, '127.0.0.1', 0),
+	(27, 9, 'FREE', '쿠키 만료 후 작성 테스트', '<p>테스트</p>', 213, 2, '2025-11-23 21:17:45', NULL, '127.0.0.1', 0),
 	(28, 1, 'NOTICE', '[공지] 공지 공지', '<p>테스트</p>', 14, 0, '2025-11-24 09:39:01', NULL, '127.0.0.1', 0),
 	(29, 1, 'FREE', '삭제 예정인 글', '<p>ㅇㅇ<img class="editor-image" src="https://192.168.0.190:8070/api/images/MCL/board/2025/11/24/41b0b4f4-64bf-4132-816d-7c995278a38f.png"></p>', 8, 1, '2025-11-24 11:16:34', '2025-11-24 11:17:47', '127.0.0.1', 1),
-	(30, 11, 'FREE', 'ㅋㅋ문제점 발견 ㅋㅋㅋㅋ', '<p><img class="editor-image" src="https://192.168.0.190:8070/api/images/MCL/board/2025/11/25/a38cf045-1e57-4473-988c-e36bfae38101.png">ㅈㄱㄴ</p>', 19, 0, '2025-11-25 14:07:50', NULL, '127.0.0.1', 0),
-	(31, 1, 'FREE', '이미지', '<p></p><p><img class="editor-image" src="https://img.freepik.com/free-vector/graident-ai-robot-vectorart_78370-4114.jpg?semt=ais_hybrid&amp;w=740&amp;q=80" alt="Robot 이미지 - Freepik에서 무료 다운로드"></p><p><img class="editor-image" src="https://storage.googleapis.com/media-newsinitiative/images/GO801_GNI_VerifyingPhotos_Card2_image3.original.jpg" alt="이미지로 검색하기: 사진 확인. - Google News Initiative"></p><p></p><p></p>', 2, 0, '2025-11-25 14:52:59', NULL, '127.0.0.1', 0);
+	(30, 11, 'FREE', 'ㅋㅋ문제점 발견 ㅋㅋㅋㅋ', '<p><img class="editor-image" src="https://192.168.0.190:8070/api/images/MCL/board/2025/11/25/a38cf045-1e57-4473-988c-e36bfae38101.png">ㅈㄱㄴ</p>', 21, 0, '2025-11-25 14:07:50', NULL, '127.0.0.1', 0),
+	(31, 1, 'FREE', '이미지', '<p></p><p><img class="editor-image" src="https://img.freepik.com/free-vector/graident-ai-robot-vectorart_78370-4114.jpg?semt=ais_hybrid&amp;w=740&amp;q=80" alt="Robot 이미지 - Freepik에서 무료 다운로드"></p><p><img class="editor-image" src="https://storage.googleapis.com/media-newsinitiative/images/GO801_GNI_VerifyingPhotos_Card2_image3.original.jpg" alt="이미지로 검색하기: 사진 확인. - Google News Initiative"></p><p></p><p></p>', 6, 0, '2025-11-25 14:52:59', NULL, '127.0.0.1', 0);
 
 -- 테이블 mcl_project.board_attachments 구조 내보내기
 DROP TABLE IF EXISTS `board_attachments`;
@@ -78,7 +78,7 @@ CREATE TABLE IF NOT EXISTS `board_attachments` (
   PRIMARY KEY (`idx`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- 테이블 데이터 mcl_project.board_attachments:~4 rows (대략적) 내보내기
+-- 테이블 데이터 mcl_project.board_attachments:~5 rows (대략적) 내보내기
 INSERT INTO `board_attachments` (`idx`, `board_idx`, `dir`, `stored_name`, `original_name`, `status`, `regdate`) VALUES
 	(1, 22, '2025/11/21', '6215aeb1-4d8d-4663-8f4d-bf1c817bf789.webp', 'NbwWpZAY7NiMTNeIrCKv8Ov-bNDQqqfDVUCI1C1JIq09NK64iWK1_yXeIvBm7MzqdaatjXZWLwZdXEKS79mxKg.webp', 'ACTIVE', '2025-11-21 13:10:57'),
 	(2, 22, '2025/11/21', '46222a60-54b1-44f6-8eda-c183e97c3e7a.webp', 'doro.webp', 'ACTIVE', '2025-11-21 13:16:37'),
@@ -249,20 +249,21 @@ CREATE TABLE IF NOT EXISTS `member` (
   PRIMARY KEY (`idx`) USING BTREE,
   UNIQUE KEY `userid` (`userid`) USING BTREE,
   UNIQUE KEY `nickname` (`nickname`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- 테이블 데이터 mcl_project.member:~10 rows (대략적) 내보내기
 INSERT INTO `member` (`idx`, `userid`, `pwd`, `nickname`, `birth`, `file`, `grade`, `regdate`, `provider`, `provider_id`, `refresh_token`) VALUES
-	(1, 'admin', '$2a$10$8vlY1lgTHViNBIbrEJ1Pd.Ek5beF3bJjFOrAwSSk9W1ZihTSuB1QW', '관리자', '1955-05-05', 'MCL/profile/20251124/2970cf96-b3e9-4140-96f3-93e28b8e570e.png', 9, '2025-11-24 09:29:07', 'LOCAL', 'admin', 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTc2NDY2MDgzMH0.ZqoVLpGa2eDEyoLxVKGmaZTxNlaOkjxQ7aXswNiPBcg5s-6K9rc02enWA9jgtxwQCanBQe3_QPXOd7x1y_9DFQ'),
+	(1, 'admin', '$2a$10$8vlY1lgTHViNBIbrEJ1Pd.Ek5beF3bJjFOrAwSSk9W1ZihTSuB1QW', '관리자', '1955-05-05', 'MCL/profile/20251124/2970cf96-b3e9-4140-96f3-93e28b8e570e.png', 9, '2025-11-24 09:29:07', 'LOCAL', 'admin', 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTc2NDc0Njk3N30.KXiH77jX3HwjR4gsd3qnCGtq36Slk46dJ_c5nDDwFxWGCmXWy5s1gnYfkL1mhEeQmoG1F_zEwgbIQP3i-qKe9g'),
 	(2, 'kakao_4512905924', 'SOCIAL_LOGIN', '원현', NULL, 'http://img1.kakaocdn.net/thumb/R640x640.q70/?fname=http://t1.kakaocdn.net/account_images/default_profile.jpeg', 1, '2025-11-04 16:14:33', 'kakao', '4512905924', NULL),
 	(3, 'naver_CSXN8VrgVCR3FHa2IhezYr6JcCDPppy41QxCqvGZ2h8', 'SOCIAL_LOGIN', 'dwdwdwdwdwdw', NULL, 'https://ssl.pstatic.net/static/pwe/address/img_profile.png', 1, '2025-11-04 16:16:16', 'naver', 'CSXN8VrgVCR3FHa2IhezYr6JcCDPppy41QxCqvGZ2h8', 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJDU1hOOFZyZ1ZDUjNGSGEySWhlellyNkpjQ0RQcHB5NDFReENxdkdaMmg4IiwiZXhwIjoxNzYzNjkxNjYzfQ.RnfWvVzrql_cY_YtjUXGDL2wwLhRtR8kCuLbMlay9Su9WZ1fvYbUrkxXxAkjS5UT06MA18QbwPmQKZR3eezcbw'),
 	(4, 'hong', '$2a$10$pZX5ONleZmG05.b6BfxnAO1E.qXv1jOA9ReeuBYOplSEv0Ww7s6EG', '홍길동', '2000-02-02', 'MCL/profile/20251111/9b63f6d8-2a0f-492c-b364-9a2ee40ba8ae.webp', 1, '2025-11-11 16:22:51', 'LOCAL', 'hong', 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJob25nIiwiZXhwIjoxNzYzOTQ0MDEzfQ.xv90oYM2G53kFHhnJtTA-gSsS9p0nwfCUyZEQRzRmN0BFNX4kXm7F5P5WWxCG6jd3bV3lrbSX0nTlpoMrVvJWw'),
 	(5, 'duddj', '$2a$10$7uq9G5SOjMg6/P/h7bU3yegfGEE6UC5KT/d3exQoRkNm/5iKbgBIC', 'english', '2025-11-11', 'MCL/profile/20251111/f2363c77-08d4-4a4d-89d7-e051e4b282ad.png', 1, '2025-11-11 16:58:55', 'LOCAL', 'duddj', 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJkdWRkaiIsImV4cCI6MTc2NDAyOTM5MX0.uRL1wcp-n4AIMAG2LXmapRsKzQn03O_cWS9CL8y9W_CKNKjOxKeUTRldqM8cP96R4qEbeWti9SDa86klK9VYbw'),
 	(6, 'gksrmf', '$2a$10$S6Vc85ILjSpkn9v6mEa/e.qZuaK6rPwZQHAAlGp6NDJ7U8Uybfam.', '세종대왕', '1446-10-09', 'MCL/profile/20251112/f1884226-c2e7-45da-96b5-8c1bc477d751.webp', 1, '2025-11-12 16:23:53', 'LOCAL', 'gksrmf', 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJna3NybWYiLCJleHAiOjE3NjM2MjI2NTV9.G4I7EiEvMDLNDL4A7jXr8H_aNFNCF-PollUKvm9QEVt4KU1_Thpy9xjl5sKnxqXy3jUeMPt6P2BAPLEkzHHbOQ'),
-	(7, 'butter', '$2a$10$IbESdILW.0HFsSoCq18gA.jGSu5YNbVxhk0SyGtROeIS8alGds6we', '버터', '2022-02-02', 'MCL/profile/20251121/c972364c-775d-4fcf-aac0-99387889f708.webp', 1, '2025-11-13 16:20:54', 'LOCAL', 'butter', 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJidXR0ZXIiLCJleHAiOjE3NjQ2MDQ4MDV9.Aat3iwSYMs5DALS92nFKixZH41grkM9QX-ViyS_O4T96ULgb_aR9I1H2ixnpiKFZ8TozZ-W6Pier113VmQffVw'),
+	(7, 'butter', '$2a$10$IbESdILW.0HFsSoCq18gA.jGSu5YNbVxhk0SyGtROeIS8alGds6we', '버터', '2022-02-02', 'MCL/profile/20251121/c972364c-775d-4fcf-aac0-99387889f708.webp', 1, '2025-11-13 16:20:54', 'LOCAL', 'butter', 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJidXR0ZXIiLCJleHAiOjE3NjQ3NDcxMTV9.TL2_3XFMUQwCWh7v5r4Icopbt2TydWNfabu7NtlP2SCPHtLWtrznMVJieRUAMGbC9lbSA6On0njgeiaUQJUfew'),
 	(8, 'testid', '$2a$10$qlE2wH0xGQ9tUuEyIYzcnO5qMBIA08dKWzvsh5kIkYfGxBiBtiCaa', '아이스베어', '2000-01-01', 'MCL/profile/20251118/4a425373-44a2-4128-b904-961e126dfeaa.jpg', 1, '2025-11-17 09:32:16', 'LOCAL', 'testid', 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZXN0aWQiLCJleHAiOjE3NjQ1NDg1Mzl9.wSp4cWN9URvu73Y_k3FN0qX8UjYrxSeAFvycPlt58JKofwsNlbuNVqvn4hw46_OaUITkChmfoiZ73dnvUQzkjw'),
-	(9, 'wkaaksqh', '$2a$10$.3bLbgHkAHcfGNudmT/qiOZ25RO8Uw8fKC8PmKi9J.aRtWUzClIgy', '잠만보', '2000-01-01', 'MCL/profile/20251123/b0387b5f-ad6e-40fa-bccf-a4211ddbea69.png', 1, '2025-11-23 02:21:37', 'LOCAL', 'wkaaksqh', 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ3a2Fha3NxaCIsImV4cCI6MTc2NDY1MjM1Mn0.GEcvPHYLq1Yf2PMqKd-HTdb54tabLzd6DsU56JEZquDpWYuI_WZrJgXgG85L68DG5Tcr7JbFCSoeRwtWu2QgWQ'),
-	(11, 'erer1', '$2a$10$SRU1uNVLmLekf7MqhtrV1.P5YyhvpYjtu/FidWARhbH9hK4T5qSjS', '명기', '2025-12-01', 'MCL/profile/20251125/63f57dd4-d047-4982-88ae-f0b4bbd1964a.png', 1, '2025-11-25 14:02:00', 'LOCAL', 'erer1', 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJlcmVyMSIsImV4cCI6MTc2NDY1MTczMH0.mALd5GUxv-wWmDpzwTGnw6YcqZ7C0fNxhUOVxroq-MWqiPlOYFBgz4jrG13u58XZiIshzbQtd77vFk2u35QVKg');
+	(9, 'wkaaksqh', '$2a$10$.3bLbgHkAHcfGNudmT/qiOZ25RO8Uw8fKC8PmKi9J.aRtWUzClIgy', '잠만보', '2000-01-01', 'MCL/profile/20251123/b0387b5f-ad6e-40fa-bccf-a4211ddbea69.png', 1, '2025-11-23 02:21:37', 'LOCAL', 'wkaaksqh', 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ3a2Fha3NxaCIsImV4cCI6MTc2NDc1MDI2M30.2v9hcXv2ugZQ_TeWr_PqMpNQmk8iWyPVS6VuPp6PXN96fFfH7iuzZjJai8N-jPjFrtNeRvqEPaLfzX3lYnT3uA'),
+	(11, 'erer1', '$2a$10$SRU1uNVLmLekf7MqhtrV1.P5YyhvpYjtu/FidWARhbH9hK4T5qSjS', '명기', '2025-12-01', 'MCL/profile/20251125/63f57dd4-d047-4982-88ae-f0b4bbd1964a.png', 1, '2025-11-25 14:02:00', 'LOCAL', 'erer1', 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJlcmVyMSIsImV4cCI6MTc2NDY1MTczMH0.mALd5GUxv-wWmDpzwTGnw6YcqZ7C0fNxhUOVxroq-MWqiPlOYFBgz4jrG13u58XZiIshzbQtd77vFk2u35QVKg'),
+	(12, 'dkrnahs', '$2a$10$JysVHo2SmQZk56M.mJtdHuI5XrGBwkC0d2ovUf8w2MvmOFzVbzo3C', '아구몬', '1999-03-07', 'MCL/profile/20251126/177a5812-4f8b-4a66-82ed-abb42cf0ff4d.jpg', 1, '2025-11-26 16:36:28', 'LOCAL', 'dkrnahs', 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJka3JuYWhzIiwiZXhwIjoxNzY0NzUwMjEyfQ.KzfNi6LxhtTfDvxzbZgwKvAtoH_ARZ0tLXaEApnlcJpbx9ZNflVxzMIitn0qUXcTUJMk2yrLD3BXi442wn_gDg');
 
 -- 테이블 mcl_project.poke_sample 구조 내보내기
 DROP TABLE IF EXISTS `poke_sample`;
@@ -291,14 +292,43 @@ CREATE TABLE IF NOT EXISTS `poke_sample` (
   PRIMARY KEY (`idx`),
   KEY `idx_pokemon_idx` (`pokemon_idx`),
   KEY `idx_member_idx` (`member_idx`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- 테이블 데이터 mcl_project.poke_sample:~4 rows (대략적) 내보내기
+-- 테이블 데이터 mcl_project.poke_sample:~8 rows (대략적) 내보내기
 INSERT INTO `poke_sample` (`idx`, `member_idx`, `pokemon_idx`, `pokemon_name`, `tera_type`, `item`, `nature`, `ability`, `ivs`, `evs`, `move1`, `move2`, `move3`, `move4`, `description`, `visibility`, `regdate`, `moddate`, `like_count`, `hit`, `is_deleted`) VALUES
 	(1, 1, 25, '피카츄', '페어리', '전기구슬', '조심', '정전기', '6V', 'AS252', '기술1', '기술2', '기술3', '기술4', '대충 사용법', 'PUBLIC', '2025-11-24 15:51:58', '2025-11-25 15:57:26', 0, 7, 1),
-	(2, 7, 445, '한카리아스', '강철', '구애머리띠', '명랑', '까칠한피부', '6V', 'H4 A252 S252', '지진', '드래곤 클로', '아이언 헤드', '칼춤', '간단한 설명', 'PUBLIC', '2025-11-24 22:36:37', '2025-11-25 00:37:48', 1, 54, 0),
-	(3, 9, 6, '리자몽', '페어리', '생명의 구슬', '조심', '선파워', '6V', 'H4 C252 S252', '역린', '지진', '칼춤', '화염방사', '테스트 입력', 'PUBLIC', '2025-11-25 11:39:57', '2025-11-25 15:39:36', 0, 18, 0),
-	(4, 1, 25, '피카츄', '비행', '생명의구슬', '조심', 'static', '31/0/31/31/31/31', 'H4 C252 S252', 'volt-switch', 'tera-blast', 'iron-tail', 'bide', '테스트 샘플', 'PUBLIC', '2025-11-25 15:37:34', '2025-11-25 15:39:03', 0, 6, 0);
+	(2, 7, 445, '한카리아스', '강철', '구애머리띠', '명랑', '까칠한피부', '6V', 'H4 A252 S252', '지진', '드래곤 클로', '아이언 헤드', '칼춤', '간단한 설명', 'PUBLIC', '2025-11-24 22:36:37', '2025-11-26 15:05:12', 1, 56, 0),
+	(3, 9, 6, '리자몽', '페어리', '목탄', '조심', '선파워', '6V', 'H4 C252 S252', '역린', '지진', '칼춤', '화염방사', '테스트 입력', 'PUBLIC', '2025-11-25 11:39:57', '2025-11-26 16:23:38', 0, 34, 0),
+	(4, 1, 25, '피카츄', '비행', '생명의구슬', '조심', 'static', '31/0/31/31/31/31', 'H4 C252 S252', 'volt-switch', 'tera-blast', 'iron-tail', 'bide', '테스트 샘플', 'PUBLIC', '2025-11-25 15:37:34', '2025-11-26 14:59:05', 1, 22, 0),
+	(5, 9, 1008, '미라이돈', '비행', '약점보험', '조심', '하드론엔진', '31/31/31/31/31/31', 'H4 C252 S252', '파워젬', '파라볼라차지', '테라버스트', '용성군', '나만 보기 테스트', 'PRIVATE', '2025-11-26 10:28:07', '2025-11-26 14:54:05', 0, 20, 0),
+	(6, 9, 999, '모으령', '드래곤', '은빛가루', '차분', '주눅', '0/0/0/0/0/0', '0', '나쁜음모', '나이트헤드', '놀래키기', '대타출동', '', 'PUBLIC', '2025-11-26 10:31:55', '2025-11-26 16:24:06', 0, 16, 0),
+	(7, 9, 1024, '테라파고스', '강철', '목탄', '냉정', '테라체인지', '0/0/0/0/0/0', 'H60 A60 B60 C60 D60 S60', '10만볼트', '객기', '고속스핀', '기가임팩트', '', 'PRIVATE', '2025-11-26 10:33:32', '2025-11-26 16:22:35', 0, 77, 0),
+	(8, 1, 25, '피카츄', '노말', '자석', '고집', '피뢰침', '31/0/31/31/31/31', 'H252 C252 D4', '10만볼트', '일렉트릭네트', '방전', '방어', '관리자 피카츄', 'PUBLIC', '2025-11-26 16:26:22', '2025-11-26 17:29:38', 1, 36, 0);
+
+-- 테이블 mcl_project.poke_sample_comment 구조 내보내기
+DROP TABLE IF EXISTS `poke_sample_comment`;
+CREATE TABLE IF NOT EXISTS `poke_sample_comment` (
+  `idx` int NOT NULL AUTO_INCREMENT,
+  `poke_sample_idx` int NOT NULL COMMENT '어떤 샘플에 달린 댓글인지 (FK)',
+  `member_idx` int NOT NULL COMMENT '작성자 (FK)',
+  `parent_idx` int DEFAULT NULL COMMENT '대댓글인 경우 부모 댓글 ID',
+  `ment` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `regdate` datetime DEFAULT CURRENT_TIMESTAMP,
+  `moddate` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  `is_deleted` tinyint(1) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`idx`) USING BTREE,
+  KEY `idx_sample_idx` (`poke_sample_idx`),
+  KEY `idx_parent_idx` (`parent_idx`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- 테이블 데이터 mcl_project.poke_sample_comment:~5 rows (대략적) 내보내기
+INSERT INTO `poke_sample_comment` (`idx`, `poke_sample_idx`, `member_idx`, `parent_idx`, `ment`, `regdate`, `moddate`, `is_deleted`) VALUES
+	(1, 8, 9, NULL, '와! 피카츄!!', '2025-11-26 16:28:26', '2025-11-26 16:29:00', 0),
+	(2, 8, 1, 1, '@잠만보 와! 피카츄!!!', '2025-11-26 16:31:18', '2025-11-26 16:31:18', 0),
+	(3, 8, 7, 1, '@잠만보 와! 피카츄!!!!', '2025-11-26 16:32:15', '2025-11-26 16:32:15', 0),
+	(4, 8, 7, 2, '@관리자 와! 피카츄!!!!!', '2025-11-26 16:32:25', '2025-11-26 16:33:40', 1),
+	(5, 8, 12, NULL, '피카츄 나보다 약함', '2025-11-26 16:36:58', '2025-11-26 16:36:58', 0),
+	(6, 8, 12, 2, '@관리자 왜 삭제함', '2025-11-26 16:48:45', '2025-11-26 16:48:45', 0);
 
 -- 테이블 mcl_project.poke_sample_like 구조 내보내기
 DROP TABLE IF EXISTS `poke_sample_like`;
@@ -309,11 +339,13 @@ CREATE TABLE IF NOT EXISTS `poke_sample_like` (
   `regdate` datetime DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`idx`) USING BTREE,
   UNIQUE KEY `uq_sample_member` (`sample_idx`,`member_idx`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- 테이블 데이터 mcl_project.poke_sample_like:~1 rows (대략적) 내보내기
+-- 테이블 데이터 mcl_project.poke_sample_like:~0 rows (대략적) 내보내기
 INSERT INTO `poke_sample_like` (`idx`, `sample_idx`, `member_idx`, `regdate`) VALUES
-	(3, 2, 7, '2025-11-24 23:09:49');
+	(3, 2, 7, '2025-11-24 23:09:49'),
+	(6, 4, 9, '2025-11-26 14:58:54'),
+	(7, 8, 9, '2025-11-26 17:29:38');
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;

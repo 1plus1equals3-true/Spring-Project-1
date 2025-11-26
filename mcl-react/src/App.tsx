@@ -15,6 +15,7 @@ import BoardEditorPage from "./pages/BoardEditorPage";
 import PokeSampleEditorPage from "./pages/PokeSampleEditorPage";
 import PokeSampleListPage from "./pages/PokeSampleListPage";
 import PokeSampleDetailPage from "./pages/PokeSampleDetailPage";
+import MyCollectionPage from "./pages/MyCollectionPage";
 
 import "./styles/main.css";
 
@@ -37,7 +38,7 @@ function App() {
           <Route path="/board/free" element={<FreeBoardPage />} />
           <Route path="/board/:type/:id" element={<BoardDetailPage />} />
 
-          {/* 포켓몬 목록 및 상세 조회는 비회원도 가능 */}
+          {/* 샘플 목록 및 상세 조회는 비회원도 가능 */}
           <Route path="/poke-sample/list/" element={<PokeSampleListPage />} />
           <Route path="/poke-sample/:id" element={<PokeSampleDetailPage />} />
 
@@ -54,6 +55,7 @@ function App() {
               path="/poke-sample/:id/edit"
               element={<PokeSampleEditorPage />}
             />
+            <Route path="/my-collection" element={<MyCollectionPage />} />
 
             {/* 작성 페이지의 공지 여부는 자동으로 검사 */}
             <Route path="/board/:type/write" element={<BoardEditorPage />} />

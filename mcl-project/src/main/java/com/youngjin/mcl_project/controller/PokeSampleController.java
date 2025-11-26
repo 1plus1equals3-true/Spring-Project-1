@@ -1,8 +1,8 @@
 package com.youngjin.mcl_project.controller;
 
-import com.youngjin.mcl_project.dto.PokeSampleRequestDTO;
-import com.youngjin.mcl_project.dto.PokeSampleResponseDTO;
+import com.youngjin.mcl_project.dto.*;
 import com.youngjin.mcl_project.service.MemberService;
+import com.youngjin.mcl_project.service.PokeSampleCommentService;
 import com.youngjin.mcl_project.service.PokeSampleService;
 import com.youngjin.mcl_project.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +22,7 @@ public class PokeSampleController {
 
     private final PokeSampleService pokeSampleService;
     private final MemberService memberService;
+    private final PokeSampleCommentService commentService;
 
     // BoardController와 동일한 로직
     private long getCurrentMemberIdx() {
@@ -56,6 +57,36 @@ public class PokeSampleController {
             @RequestParam(defaultValue = "12") int size // 한 번에 12개씩 (그리드에 맞게)
     ) {
         Page<PokeSampleResponseDTO> result = pokeSampleService.getSamples(pokemonIdx, keyword, page, size);
+        return ResponseEntity.ok(result);
+    }
+
+    // 내 샘플 목록 조회 API
+    @GetMapping("/list/mine")
+    public ResponseEntity<Page<PokeSampleResponseDTO>> getMySamples(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size
+    ) {
+        long memberIdx = getCurrentMemberIdx();
+        if (memberIdx == 0L) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        Page<PokeSampleResponseDTO> result = pokeSampleService.getMySamples(memberIdx, page, size);
+        return ResponseEntity.ok(result);
+    }
+
+    // 내가 좋아요한 샘플 목록 API
+    @GetMapping("/list/liked")
+    public ResponseEntity<Page<PokeSampleResponseDTO>> getLikedSamples(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size
+    ) {
+        long memberIdx = getCurrentMemberIdx();
+        if (memberIdx == 0L) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        Page<PokeSampleResponseDTO> result = pokeSampleService.getLikedSamples(memberIdx, page, size);
         return ResponseEntity.ok(result);
     }
 
@@ -170,6 +201,75 @@ public class PokeSampleController {
         } catch (Exception e) {
             log.error("좋아요 처리 실패", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // --- 댓글 API ---
+
+    /**
+     * 댓글 목록 조회
+     * GET /api/v1/poke-sample/comment/list/{sampleIdx}
+     */
+    @GetMapping("/comment/list/{sampleIdx}")
+    public ResponseEntity<List<PokeSampleCommentResponse>> getCommentList(@PathVariable Long sampleIdx) {
+        List<PokeSampleCommentResponse> comments = commentService.getCommentList(sampleIdx);
+        return ResponseEntity.ok(comments);
+    }
+
+    /**
+     * 댓글 작성
+     * POST /api/v1/poke-sample/comment
+     */
+    @PostMapping("/comment")
+    public ResponseEntity<Long> createComment(@RequestBody PokeSampleCommentCreationRequest request) {
+        long memberIdx = getCurrentMemberIdx();
+        if (memberIdx == 0L) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        try {
+            Long commentIdx = commentService.createComment(request, memberIdx);
+            return new ResponseEntity<>(commentIdx, HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    /**
+     * 댓글 수정
+     * PUT /api/v1/poke-sample/comment
+     */
+    @PutMapping("/comment")
+    public ResponseEntity<String> updateComment(@RequestBody PokeSampleCommentUpdateRequest request) {
+        long memberIdx = getCurrentMemberIdx();
+        if (memberIdx == 0L) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+        }
+
+        try {
+            commentService.updateComment(request, memberIdx);
+            return ResponseEntity.ok("수정되었습니다.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    /**
+     * 댓글 삭제
+     * DELETE /api/v1/poke-sample/comment/{idx}
+     */
+    @DeleteMapping("/comment/{idx}")
+    public ResponseEntity<String> deleteComment(@PathVariable Long idx) {
+        long memberIdx = getCurrentMemberIdx();
+        if (memberIdx == 0L) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+        }
+
+        try {
+            commentService.deleteComment(idx, memberIdx);
+            return ResponseEntity.ok("삭제되었습니다.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 }

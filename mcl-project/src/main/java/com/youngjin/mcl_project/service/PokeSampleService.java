@@ -5,7 +5,9 @@ import com.youngjin.mcl_project.dto.PokeSampleResponseDTO;
 import com.youngjin.mcl_project.entity.MemberEntity;
 import com.youngjin.mcl_project.entity.PokeSampleEntity;
 import com.youngjin.mcl_project.entity.PokeSampleLikeEntity;
+import com.youngjin.mcl_project.enums.Visibility;
 import com.youngjin.mcl_project.repository.MemberRepository;
+import com.youngjin.mcl_project.repository.PokeSampleCommentRepository;
 import com.youngjin.mcl_project.repository.PokeSampleLikeRepository;
 import com.youngjin.mcl_project.repository.PokeSampleRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,8 +17,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -25,6 +25,7 @@ public class PokeSampleService {
     private final PokeSampleRepository pokeSampleRepository;
     private final MemberRepository memberRepository;
     private final PokeSampleLikeRepository likeRepository;
+    private final PokeSampleCommentRepository commentRepository;
 
     // 1. 등록 (Create)
     @Transactional
@@ -39,7 +40,7 @@ public class PokeSampleService {
     public PokeSampleResponseDTO getSample(Long idx, String currentProviderId) {
         // 삭제 안 된 것만 조회
         PokeSampleEntity entity = pokeSampleRepository.findByIdxAndIsDeletedFalse(idx)
-                .orElseThrow(() -> new IllegalArgumentException("해당 샘플이 존재하지 않거나 삭제되었습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("해당 샘플이 존재하지 않습니다. idx=" + idx));
 
         entity.increaseHit();
 
@@ -58,26 +59,33 @@ public class PokeSampleService {
                 isMine = entity.getMemberIdx().equals(currentMember.getIdx());
             }
         }
+        long commentCount = commentRepository.countByPokeSampleIdxAndIsDeletedFalse(entity.getIdx());
 
-        return PokeSampleResponseDTO.fromEntity(entity, nickname, isLiked, isMine);
+        return PokeSampleResponseDTO.fromEntity(entity, nickname, isLiked, isMine, commentCount);
     }
 
-    // 3. 통합 목록 조회 (페이징 적용 - 전체, 특정, 검색 모두 처리)
+    // 3. 통합 목록 조회 (PUBLIC만 조회)
     public Page<PokeSampleResponseDTO> getSamples(Integer pokemonIdx, String keyword, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<PokeSampleEntity> entityPage;
 
         if (pokemonIdx != null) {
-            entityPage = pokeSampleRepository.findByPokemonIdxAndIsDeletedFalseOrderByRegdateDesc(pokemonIdx, pageable);
+            entityPage = pokeSampleRepository.findByPokemonIdxAndIsDeletedFalseAndVisibilityOrderByRegdateDesc(
+                    pokemonIdx, Visibility.PUBLIC, pageable);
         } else if (keyword != null && !keyword.trim().isEmpty()) {
-            entityPage = pokeSampleRepository.findByPokemonNameContainingAndIsDeletedFalseOrderByRegdateDesc(keyword, pageable);
+            entityPage = pokeSampleRepository.findByPokemonNameContainingAndIsDeletedFalseAndVisibilityOrderByRegdateDesc(
+                    keyword, Visibility.PUBLIC, pageable);
         } else {
-            entityPage = pokeSampleRepository.findAllByIsDeletedFalseOrderByRegdateDesc(pageable);
+            entityPage = pokeSampleRepository.findAllByIsDeletedFalseAndVisibilityOrderByRegdateDesc(
+                    Visibility.PUBLIC, pageable);
         }
 
         return entityPage.map(entity -> {
             String nickname = memberRepository.findNicknameByIdx(entity.getMemberIdx()).orElse("알 수 없음");
-            return PokeSampleResponseDTO.fromEntity(entity, nickname, false, false);
+
+            long commentCount = commentRepository.countByPokeSampleIdxAndIsDeletedFalse(entity.getIdx());
+
+            return PokeSampleResponseDTO.fromEntity(entity, nickname, false, false, commentCount);
         });
     }
 
@@ -136,5 +144,36 @@ public class PokeSampleService {
             sample.increaseLikeCount();
             return true;
         }
+    }
+
+    // 7. 내 샘플 목록 조회 (PRIVATE 포함)
+    public Page<PokeSampleResponseDTO> getMySamples(long memberIdx, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<PokeSampleEntity> entityPage = pokeSampleRepository.findByMemberIdxAndIsDeletedFalseOrderByRegdateDesc(
+                memberIdx, pageable);
+
+        return entityPage.map(entity -> {
+            String nickname = memberRepository.findNicknameByIdx(entity.getMemberIdx()).orElse("나");
+
+            long commentCount = commentRepository.countByPokeSampleIdxAndIsDeletedFalse(entity.getIdx());
+
+            return PokeSampleResponseDTO.fromEntity(entity, nickname, false, true, commentCount);
+        });
+    }
+
+    // 8. 내가 좋아요한 샘플 목록 조회
+    public Page<PokeSampleResponseDTO> getLikedSamples(long memberIdx, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<PokeSampleLikeEntity> likePage = likeRepository.findByMemberIdxOrderByRegdateDesc(memberIdx, pageable);
+
+        return likePage.map(like -> {
+            PokeSampleEntity sample = like.getPokeSample();
+            String nickname = memberRepository.findNicknameByIdx(sample.getMemberIdx()).orElse("알 수 없음");
+            boolean isMine = sample.getMemberIdx().equals(memberIdx);
+
+            long commentCount = commentRepository.countByPokeSampleIdxAndIsDeletedFalse(sample.getIdx());
+
+            return PokeSampleResponseDTO.fromEntity(sample, nickname, true, isMine, commentCount);
+        });
     }
 }
