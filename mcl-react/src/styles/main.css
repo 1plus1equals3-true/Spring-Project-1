@@ -259,3 +259,145 @@ ul li:last-child {
     flex: 1 1 calc(50% - 10px);
   }
 }
+
+/* ----------------------------- */
+/* 🏠 Home Page 전용 스타일 (NEW) */
+/* ----------------------------- */
+
+.home-container {
+  /* .content-area 내부에서 사용되므로 별도 마진 불필요할 수 있음 */
+  width: 100%;
+}
+
+.home-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* 기본 2열 */
+  gap: 24px;
+}
+
+/* --- 로딩 & 에러 박스 --- */
+.loading-box {
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+
+  /* 전체 너비 차지 */
+  grid-column: 1 / -1;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  color: #4f46e5; /* Indigo 600 */
+  animation: spin 1s linear infinite;
+  margin-bottom: 12px;
+}
+
+.error-box {
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  padding: 24px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+
+  /* 전체 너비 차지 */
+  grid-column: 1 / -1;
+}
+
+.error-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* 에러 메시지와 버튼 양끝 정렬 */
+  color: #dc2626;
+}
+
+.error-icon {
+  width: 24px;
+  height: 24px;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.retry-btn {
+  padding: 6px 14px;
+  background-color: #ef4444;
+  color: white;
+  font-size: 0.875rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.retry-btn:hover {
+  background-color: #dc2626;
+}
+
+/* --- 섹션 레이아웃 제어 --- */
+
+/* 공지사항 & 인기 샘플: 전체 너비 (2칸 차지) */
+/* nth-child 순서: 1(공지), 2(오늘포켓몬), 3(자유), 4(인기샘플) */
+.home-grid > :nth-child(1),
+.home-grid > :nth-child(4) {
+  grid-column: span 2;
+}
+
+/* 오늘의 포켓몬 & 자유게시판: 절반 너비 (1칸 차지) */
+.home-grid > :nth-child(2),
+.home-grid > :nth-child(3) {
+  grid-column: span 1;
+}
+
+/* 내용 없음 (No Content) 스타일 */
+.no-content {
+  padding: 40px;
+  text-align: center;
+  color: #9ca3af;
+}
+
+/* 스피너 애니메이션 */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ----------------------------- */
+/* 📱 모바일 반응형 (768px 이하) */
+/* ----------------------------- */
+@media (max-width: 768px) {
+  .home-grid {
+    grid-template-columns: 1fr; /* 1열로 변경 */
+  }
+
+  /* 모바일에서는 모든 섹션이 1열을 꽉 채움 */
+  .home-grid > :nth-child(1),
+  .home-grid > :nth-child(2),
+  .home-grid > :nth-child(3),
+  .home-grid > :nth-child(4) {
+    grid-column: span 1;
+  }
+}
+
+/* 회전 동작 키프레임 */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite; /* 1초 동안 무한 회전 */
+}

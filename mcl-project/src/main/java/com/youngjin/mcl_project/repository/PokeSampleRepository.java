@@ -31,4 +31,7 @@ public interface PokeSampleRepository extends JpaRepository<PokeSampleEntity, Lo
 
     // 5-2. (추가) 내 샘플 조회 + 페이징 (나중에 필요할 수 있음)
     Page<PokeSampleEntity> findByMemberIdxAndIsDeletedFalseOrderByRegdateDesc(long memberIdx, Pageable pageable);
+
+    // 6. 좋아요 순으로 상위 N개 조회 (PUBLIC만)
+    List<PokeSampleEntity> findTop3ByIsDeletedFalseAndVisibilityOrderByLikeCountDesc(Visibility visibility);
 }

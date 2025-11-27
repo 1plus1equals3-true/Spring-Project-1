@@ -272,4 +272,13 @@ public class PokeSampleController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    // 인기 샘플 조회 API
+    @GetMapping("/best")
+    public ResponseEntity<List<PokeSampleResponseDTO>> getBestSamples(
+            @RequestParam(defaultValue = "WEEKLY") String period // DAILY, WEEKLY, MONTHLY
+    ) {
+        // Service에 period 전달하여 로직 분기
+        return ResponseEntity.ok(pokeSampleService.getBestSamples(period));
+    }
 }

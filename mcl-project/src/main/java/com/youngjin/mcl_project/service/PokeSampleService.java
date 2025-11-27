@@ -17,6 +17,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -175,5 +180,61 @@ public class PokeSampleService {
 
             return PokeSampleResponseDTO.fromEntity(sample, nickname, true, isMine, commentCount);
         });
+    }
+
+    // 9. 인기 샘플 조회 (기간별)
+    public List<PokeSampleResponseDTO> getBestSamples(String period) {
+        LocalDateTime startDate;
+
+        // 기간 설정 로직
+        switch (period.toUpperCase()) {
+            case "DAILY":
+                startDate = LocalDateTime.now().minusDays(1); // 최근 24시간
+                break;
+            case "MONTHLY":
+                startDate = LocalDateTime.now().minusMonths(1); // 최근 1달
+                break;
+            case "ALL":
+                startDate = LocalDateTime.of(2000, 1, 1, 0, 0); // 전체 (사실상 모든 기간)
+                break;
+            case "WEEKLY":
+            default:
+                startDate = LocalDateTime.now().minusWeeks(1); // 기본: 최근 1주일
+                break;
+        }
+
+        // 2. 좋아요 테이블에서 상위 3개 ID 조회
+        Pageable top3 = PageRequest.of(0, 3);
+        List<Long> topSampleIds = likeRepository.findTopSampleIdsByDateAfter(startDate, top3);
+
+        // 3. ID 리스트로 샘플 엔티티 조회
+        List<PokeSampleResponseDTO> bestSamples = new ArrayList<>();
+
+        for (Long id : topSampleIds) {
+            pokeSampleRepository.findByIdxAndIsDeletedFalse(id).ifPresent(entity -> {
+                if (entity.getVisibility() == Visibility.PUBLIC) {
+                    String nickname = memberRepository.findNicknameByIdx(entity.getMemberIdx()).orElse("알 수 없음");
+                    long commentCount = commentRepository.countByPokeSampleIdxAndIsDeletedFalse(entity.getIdx());
+                    bestSamples.add(PokeSampleResponseDTO.fromEntity(entity, nickname, false, false, commentCount));
+                }
+            });
+        }
+
+        // 4. 만약 기간 내 데이터가 부족하면? -> 전체 기간 베스트로 채우기 (Fallback)
+        if (bestSamples.size() < 3) {
+            List<PokeSampleEntity> fallback = pokeSampleRepository.findTop3ByIsDeletedFalseAndVisibilityOrderByLikeCountDesc(Visibility.PUBLIC);
+            for (PokeSampleEntity entity : fallback) {
+                if (bestSamples.size() >= 3) break;
+                // 중복 방지
+                boolean exists = bestSamples.stream().anyMatch(dto -> dto.getIdx().equals(entity.getIdx()));
+                if (!exists) {
+                    String nickname = memberRepository.findNicknameByIdx(entity.getMemberIdx()).orElse("알 수 없음");
+                    long commentCount = commentRepository.countByPokeSampleIdxAndIsDeletedFalse(entity.getIdx());
+                    bestSamples.add(PokeSampleResponseDTO.fromEntity(entity, nickname, false, false, commentCount));
+                }
+            }
+        }
+
+        return bestSamples;
     }
 }
