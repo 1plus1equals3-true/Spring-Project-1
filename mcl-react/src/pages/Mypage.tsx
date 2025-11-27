@@ -1,8 +1,16 @@
-import React, { useMemo, useState, useCallback, useRef } from "react";
+import React, {
+  useMemo,
+  useState,
+  useCallback,
+  useRef,
+  useEffect,
+} from "react";
+import { useNavigate } from "react-router-dom";
 import { useSearchParams } from "react-router-dom";
 import MainLayout from "../components/layout/MainLayout";
 import { useAuth } from "../context/AuthContext";
 import type { UserInfo } from "../context/AuthContext";
+import apiClient from "../api/apiClient";
 import { API_BASE_URL, PUBLIC_IMAGE_PATH } from "../config/defaultconfig";
 import {
   Pen,
@@ -15,6 +23,13 @@ import {
   KeyRound,
   Image,
   Calendar,
+} from "lucide-react";
+import {
+  Trash2,
+  CheckSquare,
+  Square,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import "../styles/Mypage.css"; // 추출된 CSS 파일 import
 
@@ -42,7 +57,7 @@ const validateNewPassword = (password: string): string => {
 };
 
 // -----------------------------------------------------------------------
-// 1. 상수 및 스타일 정의 (사용되지 않는 인라인 스타일 제거)
+// 1. 상수 및 스타일 정의
 // -----------------------------------------------------------------------
 
 const DEFAULT_PROFILE_IMAGE =
@@ -55,12 +70,49 @@ interface Tab {
   icon: React.ElementType;
 }
 
+interface RecentBoard {
+  idx: number;
+  title: string;
+  regdate: string | number[];
+}
+
+interface RecentComment {
+  idx: number;
+  boardIdx: number;
+  ment: string;
+  regdate: string | number[];
+}
+
+// DTO
+interface MyPost {
+  idx: number;
+  title: string;
+  regdate: string | number[];
+  boardType: string;
+}
+interface MyComment {
+  idx: number;
+  ment: string;
+  regdate: string | number[];
+  boardIdx: number;
+}
+// 응답 껍데기
+interface PageResponse<T> {
+  content: T[];
+  totalPages: number;
+  totalElements: number;
+  size: number;
+  number: number;
+  last: boolean;
+  first: boolean;
+}
+
 const TABS: Tab[] = [
   { key: "dashboard", name: "대시보드", icon: ClipboardList },
-  { key: "settings", name: "사용자 설정", icon: Settings },
+  // { key: "settings", name: "사용자 설정", icon: Settings },
   { key: "profile", name: "정보 수정", icon: User },
   { key: "history", name: "활동 기록", icon: Clock10 },
-  { key: "benefits", name: "포인트", icon: Gift },
+  // { key: "benefits", name: "포인트", icon: Gift },
 ];
 
 // 이미지 경로 생성 헬퍼 함수 (Sidebar.tsx와 동일)
@@ -90,75 +142,135 @@ const getProfileImageUrl = (imagePath: string | null): string => {
 // -----------------------------------------------------------------------
 
 // 대시보드 컴포넌트
-const DashboardContent: React.FC<{ user: UserInfo }> = ({ user }) => {
+const DashboardContent: React.FC<{
+  user: UserInfo;
+  onTabChange: (key: string) => void;
+}> = ({ user, onTabChange }) => {
+  const [recentBoards, setRecentBoards] = useState<RecentBoard[]>([]);
+  const [recentComments, setRecentComments] = useState<RecentComment[]>([]);
+  const navigate = useNavigate();
+
+  // 날짜 포맷 헬퍼
+  const formatDate = (dateInput: string | number[]) => {
+    if (Array.isArray(dateInput))
+      return `${dateInput[0]}.${dateInput[1]}.${dateInput[2]}`;
+    return new Date(dateInput).toLocaleDateString();
+  };
+
+  // 데이터 로드
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [resBoards, resComments] = await Promise.all([
+          apiClient.get<RecentBoard[]>("/api/v1/members/me/recent-boards"),
+          apiClient.get<RecentComment[]>("/api/v1/members/me/recent-comments"),
+        ]);
+        setRecentBoards(resBoards.data);
+        setRecentComments(resComments.data);
+      } catch (err) {
+        console.error("대시보드 데이터 로드 실패", err);
+      }
+    };
+    fetchData();
+  }, []);
+
   return (
-    <div className="space-y-6-container">
-      {" "}
-      {/* space-y-6 대체 */}
-      {/* 프로필 요약 섹션 - 임시 스타일 적용 */}
-      <div className="profile-area-summary form-container">
+    <div className="dashboard-wrapper">
+      {/* 프로필 요약 */}
+      <div className="profile-summary">
         <img
           src={getProfileImageUrl(user.profileImageUrl)}
           alt="프로필 사진"
-          className="profile-preview-image" // 기존 프로필 이미지 스타일 재활용
+          className="profile-img-large"
           onError={(e) => {
             (e.target as HTMLImageElement).src = DEFAULT_PROFILE_IMAGE;
           }}
         />
-        <div>
-          <h2 className="text-xl font-bold">{user.nickname} 님</h2>
-          <span>회원 등급: Level {user.grade}</span>
+        <div className="profile-info">
+          <h2>{user.nickname} 님</h2>
+          <span>Level {user.grade}</span>
           <p>
             {user.birth
-              ? `생일: ${user.birth.substring(0, 10)}`
+              ? `생일 : ${user.birth.substring(0, 10)}`
               : "생일 정보 없음"}{" "}
-            | 함께한 시간을 요약해 드릴게요.
+            | 환영합니다! 오늘도 즐거운 하루 되세요.
           </p>
         </div>
       </div>
-      {/* 활동 요약 섹션 */}
-      <div className="dashboard-container space-y-4-form">
-        {/* 최근 작성 글 자리 */}
-        <div className="dashboard-box form-container">
-          <h3 className="text-lg font-semibold flex items-center mb-2">
-            <Pen className="w-4 h-4 mr-2" />
-            최근 작성 글
-          </h3>
-          <ul className="list-disc ml-5 text-gray-700">
-            <li>최근 글 제목 1 (2025.11.10)</li>
-            <li>최근 글 제목 2 (2025.11.08)</li>
-            <li>최근 글 제목 3 (2025.11.05)</li>
-            <li className="text-blue-500 cursor-pointer">더 보기 &gt;</li>
+
+      {/* 활동 요약 그리드 */}
+      <div className="activity-grid">
+        {/* 최근 작성 글 */}
+        <div className="activity-box">
+          <div className="box-title">
+            <Pen size={18} /> 최근 작성 글
+          </div>
+          <ul className="activity-list">
+            {recentBoards.length > 0 ? (
+              recentBoards.map((board) => (
+                <li
+                  key={board.idx}
+                  className="activity-item"
+                  onClick={() => navigate(`/board/free/${board.idx}`)}
+                >
+                  <span className="truncate">{board.title}</span>
+                  <span className="activity-date">
+                    {formatDate(board.regdate)}
+                  </span>
+                </li>
+              ))
+            ) : (
+              <li className="activity-item text-gray">작성한 글이 없습니다.</li>
+            )}
           </ul>
+          <span className="more-link" onClick={() => onTabChange("history")}>
+            더 보기 &gt;
+          </span>
         </div>
 
-        {/* 최근 작성 댓글 자리 */}
-        <div className="dashboard-box form-container">
-          <h3 className="text-lg font-semibold flex items-center mb-2">
-            <MessageSquareMore className="w-4 h-4 mr-2" />
-            최근 작성 댓글
-          </h3>
-          <ul className="list-disc ml-5 text-gray-700">
-            <li>댓글 내용 요약 1 (2025.11.11)</li>
-            <li>댓글 내용 요약 2 (2025.11.09)</li>
-            <li>댓글 내용 요약 3 (2025.11.07)</li>
-            <li className="text-blue-500 cursor-pointer">더 보기 &gt;</li>
+        {/* 최근 댓글 */}
+        <div className="activity-box">
+          <div className="box-title">
+            <MessageSquareMore size={18} /> 최근 작성 댓글
+          </div>
+          <ul className="activity-list">
+            {recentComments.length > 0 ? (
+              recentComments.map((comment) => (
+                <li
+                  key={comment.idx}
+                  className="activity-item"
+                  onClick={() => navigate(`/board/free/${comment.boardIdx}`)}
+                >
+                  <span className="truncate">{comment.ment}</span>
+                  <span className="activity-date">
+                    {formatDate(comment.regdate)}
+                  </span>
+                </li>
+              ))
+            ) : (
+              <li className="activity-item text-gray">
+                작성한 댓글이 없습니다.
+              </li>
+            )}
           </ul>
+          <span className="more-link" onClick={() => onTabChange("history")}>
+            더 보기 &gt;
+          </span>
         </div>
       </div>
     </div>
   );
 };
 
-// 폼 섹션 컨테이너 헬퍼 컴포넌트 (추출된 클래스 적용)
+// 폼 섹션 컨테이너
 const FormContainer: React.FC<{
   title: string;
   icon: React.ElementType;
   children: React.ReactNode;
 }> = ({ title, icon: Icon, children }) => (
-  <div className="form-container">
+  <div className="form-section">
     <h3>
-      <Icon /> {title}
+      <Icon size={20} /> {title}
     </h3>
     {children}
   </div>
@@ -379,29 +491,19 @@ const ProfileEditContent: React.FC<ProfileEditContentProps> = ({
   );
 
   return (
-    <div className="space-y-6-container">
-      {" "}
-      {/* space-y-6 대체 */}
-      {/* 알림 메시지 - Tailwind 클래스 유지 (alert-message 클래스가 Tailwind를 기반으로 정의됨) */}
+    <div>
       {message && (
-        <div
-          className={`alert-message ${
-            message.type === "success" ? "success" : "error"
-          }`}
-        >
-          {message.text}
-        </div>
+        <div className={`alert-message ${message.type}`}>{message.text}</div>
       )}
-      {/* 1. 프로필 사진 변경 */}
+
+      {/* 1. 프로필 사진 */}
       <FormContainer title="프로필 사진 변경" icon={Image}>
-        <form onSubmit={handleProfileImageUpload} className="form-layout">
-          {" "}
-          {/* space-y-4 대체 */}
-          <div className="profile-image-upload-container">
+        <form onSubmit={handleProfileImageUpload}>
+          <div className="upload-area">
             <img
               src={previewUrl}
               alt="프로필 미리보기"
-              className="profile-preview-image"
+              className="profile-img-large"
               onError={(e) => {
                 (e.target as HTMLImageElement).src = DEFAULT_PROFILE_IMAGE;
               }}
@@ -411,116 +513,90 @@ const ProfileEditContent: React.FC<ProfileEditContentProps> = ({
               ref={fileInputRef}
               accept="image/*"
               onChange={handleFileChange}
-              className="inputFileNone"
+              style={{ display: "none" }}
             />
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="file-select-button"
+              className="file-select-btn"
             >
-              {selectedFile ? "파일 다시 선택" : "사진 선택"}
+              {selectedFile ? "다시 선택" : "사진 선택"}
             </button>
             {selectedFile && (
-              <p className="file-name-display">
-                선택된 파일: {selectedFile.name}
-              </p>
+              <span className="file-name">{selectedFile.name}</span>
             )}
           </div>
-          <button
-            type="submit"
-            disabled={!selectedFile}
-            className="form-submit-button"
-          >
-            프로필 사진 업로드
+          <button type="submit" disabled={!selectedFile} className="submit-btn">
+            업로드
           </button>
         </form>
       </FormContainer>
-      {/* 2. 닉네임 변경 */}
+
+      {/* 2. 닉네임 */}
       <FormContainer title="닉네임 변경" icon={Pen}>
-        <form onSubmit={handleNicknameChange} className="form-layout">
-          {" "}
-          {/* space-y-4 대체 */}
-          <div>
-            <label htmlFor="newNickname" className="form-label">
-              새 닉네임
-            </label>
+        <form onSubmit={handleNicknameChange}>
+          <div className="input-group">
+            <label className="input-label">새 닉네임</label>
             <input
               type="text"
-              id="newNickname"
               value={newNickname}
               onChange={(e) => setNewNickname(e.target.value)}
-              className="form-input"
-              placeholder="닉네임 (2~10자, 한글/영어/숫자)"
-              minLength={2}
+              className="text-input"
+              placeholder="2~10자, 한글/영어/숫자"
               maxLength={10}
             />
           </div>
-          <p className="helper-text">
-            2자 이상 10자 이하, 한글/영어/숫자만 사용 가능합니다.
-          </p>
-          <button type="submit" className="form-submit-button">
-            닉네임 변경
+          <p className="helper-text">한글, 영문, 숫자만 사용 가능합니다.</p>
+          <button type="submit" className="submit-btn">
+            변경
           </button>
         </form>
       </FormContainer>
-      {/* 3. 생일 변경 */}
+
+      {/* 3. 생일 */}
       <FormContainer title="생일 변경" icon={Calendar}>
-        <form onSubmit={handleBirthdayChange} className="form-layout">
-          {" "}
-          {/* space-y-4 대체 */}
-          <div>
-            <label htmlFor="newBirthday" className="form-label">
-              새 생일
-            </label>
+        <form onSubmit={handleBirthdayChange}>
+          <div className="input-group">
+            <label className="input-label">생일</label>
             <input
               type="date"
-              id="newBirthday"
               value={newBirthday}
               onChange={(e) => setNewBirthday(e.target.value)}
-              className="form-input"
-              max={new Date().toISOString().substring(0, 10)} // 오늘 날짜 이후 선택 불가
+              className="text-input"
+              max={new Date().toISOString().substring(0, 10)}
             />
           </div>
-          <button type="submit" className="form-submit-button">
-            생일 변경
+          <button type="submit" className="submit-btn">
+            변경
           </button>
         </form>
       </FormContainer>
-      {/* 4. 비밀번호 변경 */}
+
+      {/* 4. 비밀번호 */}
       <FormContainer title="비밀번호 변경" icon={KeyRound}>
-        <form onSubmit={handlePasswordChange} className="form-layout">
-          {" "}
-          {/* space-y-4 대체 */}
-          <div>
-            <label htmlFor="currentPassword" className="form-label">
-              현재 비밀번호
-            </label>
+        <form onSubmit={handlePasswordChange}>
+          <div className="input-group">
+            <label className="input-label">현재 비밀번호</label>
             <input
               type="password"
-              id="currentPassword"
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
-              className="form-input"
-              placeholder="현재 비밀번호를 입력하세요"
+              className="text-input"
+              placeholder="현재 비밀번호를 입력하세요."
             />
           </div>
-          <div>
-            <label htmlFor="newPassword" className="form-label">
-              새 비밀번호
-            </label>
+          <div className="input-group">
+            <label className="input-label">새 비밀번호</label>
             <input
               type="password"
-              id="newPassword"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              className="form-input"
-              placeholder="새 비밀번호 (8~20자, 영문, 숫자, 특수문자)"
-              minLength={8}
-              maxLength={20}
+              className="text-input"
+              placeholder="8~20자, 영문+숫자+특수문자"
             />
           </div>
-          <button type="submit" className="form-submit-button">
-            비밀번호 변경
+          <button type="submit" className="submit-btn">
+            변경
           </button>
         </form>
       </FormContainer>
@@ -528,97 +604,276 @@ const ProfileEditContent: React.FC<ProfileEditContentProps> = ({
   );
 };
 
-// 기타 탭 Placeholder (추출된 클래스 적용)
-const PlaceholderContent: React.FC<{ tabName: string }> = ({ tabName }) => (
-  <div className="placeholder-content">
-    <h3>"{tabName}" 페이지입니다.</h3>
-    <p>여기에 해당 탭의 기능을 구현할 예정입니다.</p>
-  </div>
-);
+// 활동 기록 탭 (history)
+const HistoryContent: React.FC<{ user: UserInfo }> = ({ user }) => {
+  const [activeSubTab, setActiveSubTab] = useState<"posts" | "comments">(
+    "posts"
+  );
+  const [posts, setPosts] = useState<MyPost[]>([]);
+  const [comments, setComments] = useState<MyComment[]>([]);
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-// -----------------------------------------------------------------------
-// 3. MyPage 메인 컴포넌트 (추출된 클래스 적용)
-// -----------------------------------------------------------------------
+  // 데이터 로드
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      if (activeSubTab === "posts") {
+        // 게시글 조회
+        const res = await apiClient.get<PageResponse<MyPost>>(
+          `/api/v1/members/me/boards?page=${page}&size=10`
+        );
+        setPosts(res.data.content);
+        setTotalPages(res.data.totalPages);
+      } else {
+        // 댓글 조회
+        const res = await apiClient.get<PageResponse<MyComment>>(
+          `/api/v1/members/me/comments?page=${page}&size=10`
+        );
+        setComments(res.data.content);
+        setTotalPages(res.data.totalPages);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+      setSelectedIds([]); // 페이지 바뀌면 선택 초기화
+    }
+  }, [activeSubTab, page]);
 
-const MyPage: React.FC = () => {
-  // useAuth에서 updateUser 함수를 추가로 받아와 ProfileEditContent에 전달합니다.
-  const { user, updateUser } = useAuth();
-  const [searchParams, setSearchParams] = useSearchParams();
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
-  // URL에서 현재 탭을 가져오거나, 없으면 'dashboard'를 기본값으로 사용합니다.
-  const activeTabKey = searchParams.get("tab") || "dashboard";
+  // 체크박스 핸들러
+  const toggleSelect = (id: number) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+    );
+  };
 
-  // 타입 가드
-  if (!user) {
-    return null;
-  }
+  const toggleSelectAll = () => {
+    const currentData = activeSubTab === "posts" ? posts : comments;
+    const allIds = currentData.map((item) => item.idx);
 
-  // 탭 클릭 핸들러: URL의 'tab' 파라미터 변경
-  const handleTabChange = (key: string) => {
-    if (key === "dashboard") {
-      // 대시보드는 쿼리 파라미터 없이 깔끔하게 URL을 설정합니다.
-      setSearchParams({});
+    if (selectedIds.length === allIds.length) {
+      setSelectedIds([]);
     } else {
-      setSearchParams({ tab: key });
+      setSelectedIds(allIds);
     }
   };
 
-  // 현재 활성화된 탭의 내용 렌더링
+  // 삭제 핸들러
+  const handleDeleteSelected = async () => {
+    if (selectedIds.length === 0) return;
+    if (!window.confirm(`선택한 ${selectedIds.length}개를 삭제하시겠습니까?`))
+      return;
+
+    try {
+      const endpoint =
+        activeSubTab === "posts"
+          ? "/api/v1/board/delete-batch"
+          : "/api/v1/board/comment/delete-batch";
+
+      await apiClient.delete(endpoint, { data: selectedIds });
+
+      alert("삭제되었습니다.");
+      fetchData(); // 새로고침
+    } catch (err) {
+      alert("삭제 실패");
+    }
+  };
+
+  // 날짜 포맷
+  const formatDate = (dateInput: string | number[]) => {
+    if (Array.isArray(dateInput))
+      return `${dateInput[0]}.${dateInput[1]}.${dateInput[2]}`;
+    return new Date(dateInput).toLocaleDateString();
+  };
+
+  // 페이지 변경 핸들러
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 0 && newPage < totalPages) {
+      setPage(newPage);
+      window.scrollTo(0, 0); // 상단 이동
+    }
+  };
+
+  return (
+    <div className="history-container">
+      {/* 서브 탭 (글 / 댓글) */}
+      <div className="sub-tabs">
+        <button
+          className={`sub-tab-btn ${activeSubTab === "posts" ? "active" : ""}`}
+          onClick={() => {
+            setActiveSubTab("posts");
+            setPage(0);
+          }}
+        >
+          작성 글
+        </button>
+        <button
+          className={`sub-tab-btn ${
+            activeSubTab === "comments" ? "active" : ""
+          }`}
+          onClick={() => {
+            setActiveSubTab("comments");
+            setPage(0);
+          }}
+        >
+          작성 댓글
+        </button>
+      </div>
+
+      {/* 툴바 (전체 선택 / 삭제) */}
+      <div className="history-toolbar">
+        <button className="toolbar-btn" onClick={toggleSelectAll}>
+          {selectedIds.length > 0 &&
+          selectedIds.length ===
+            (activeSubTab === "posts" ? posts.length : comments.length) ? (
+            <CheckSquare size={18} />
+          ) : (
+            <Square size={18} />
+          )}
+          전체 선택
+        </button>
+        {selectedIds.length > 0 && (
+          <button className="toolbar-btn delete" onClick={handleDeleteSelected}>
+            <Trash2 size={18} /> 선택 삭제 ({selectedIds.length})
+          </button>
+        )}
+      </div>
+
+      {/* 리스트 (테이블 형태) */}
+      <div className="history-list">
+        {(activeSubTab === "posts" ? posts : comments).length === 0 ? (
+          <div className="empty-state">기록이 없습니다.</div>
+        ) : (
+          (activeSubTab === "posts" ? posts : comments).map((item: any) => (
+            <div
+              key={item.idx}
+              className={`history-item ${
+                selectedIds.includes(item.idx) ? "selected" : ""
+              }`}
+            >
+              <div
+                className="checkbox-area"
+                onClick={() => toggleSelect(item.idx)}
+              >
+                {selectedIds.includes(item.idx) ? (
+                  <CheckSquare size={20} color="#4f46e5" />
+                ) : (
+                  <Square size={20} color="#d1d5db" />
+                )}
+              </div>
+              <div
+                className="history-content-area"
+                onClick={() => {
+                  // 글이면 해당 글 상세로, 댓글이면 해당 글 상세로 이동
+                  const targetId =
+                    activeSubTab === "posts" ? item.idx : item.boardIdx;
+                  navigate(`/board/free/${targetId}`); // 게시판 타입 구분 필요하면 데이터에 포함해야 함
+                }}
+              >
+                <div className="item-title">
+                  {activeSubTab === "posts" ? item.title : item.ment}
+                </div>
+                <div className="item-date">{formatDate(item.regdate)}</div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* ⭐️ [추가] 페이지네이션 UI */}
+      {totalPages > 1 && (
+        <div className="pagination-container">
+          <button
+            onClick={() => handlePageChange(page - 1)}
+            disabled={page === 0}
+            className="page-btn"
+          >
+            <ChevronLeft size={20} />
+          </button>
+          <span className="page-info">
+            {page + 1} / {totalPages}
+          </span>
+          <button
+            onClick={() => handlePageChange(page + 1)}
+            disabled={page >= totalPages - 1}
+            className="page-btn"
+          >
+            <ChevronRight size={20} />
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const PlaceholderContent: React.FC<{ tabName: string }> = ({ tabName }) => (
+  <div className="placeholder-box">
+    <h3>"{tabName}" 탭 준비 중</h3>
+    <p>이 기능은 곧 업데이트될 예정입니다!</p>
+  </div>
+);
+
+// --- 메인 페이지 ---
+const MyPage: React.FC = () => {
+  const { user, updateUser } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTabKey = searchParams.get("tab") || "dashboard";
+
+  if (!user) return null;
+
+  const handleTabChange = (key: string) => {
+    if (key === "dashboard") setSearchParams({});
+    else setSearchParams({ tab: key });
+  };
+
   const renderContent = useMemo(() => {
     const activeTab = TABS.find((t) => t.key === activeTabKey) || TABS[0];
-
     switch (activeTab.key) {
       case "dashboard":
-        return <DashboardContent user={user} />;
-      case "settings":
-        return <PlaceholderContent tabName={activeTab.name} />;
+        return <DashboardContent user={user} onTabChange={handleTabChange} />;
       case "profile":
-        // updateUser 함수를 ProfileEditContent에 전달
         return <ProfileEditContent user={user} updateUser={updateUser} />;
       case "history":
-        return <PlaceholderContent tabName={activeTab.name} />;
-      case "benefits":
-        return <PlaceholderContent tabName={activeTab.name} />;
+        return <HistoryContent user={user} />;
       default:
-        return <DashboardContent user={user} />;
+        return <PlaceholderContent tabName={activeTab.name} />;
     }
   }, [activeTabKey, user, updateUser]);
 
   return (
-    // MainLayout 내부 콘텐츠 영역에 CSS 클래스 적용
     <MainLayout>
-      <div className="app-container">
-        {" "}
-        {/* 전체 레이아웃 클래스 적용 */}
-        <h1 className="text-3xl font-bold text-gray-800 mb-6">
-          마이페이지 관리
-        </h1>
-        <div className="main-content-box">
-          {" "}
-          {/* 주요 컨텐츠 박스 클래스 적용 */}
-          {/* 탭 네비게이션 영역 */}
-          <div className="tab-navigation">
-            {" "}
-            {/* 탭 컨테이너 클래스 적용 */}
-            {TABS.map((tab) => {
-              const isActive = tab.key === activeTabKey;
-              return (
-                <button
-                  key={tab.key}
-                  onClick={() => handleTabChange(tab.key)}
-                  className={`tab-button ${isActive ? "active" : ""}`} // 탭 버튼 클래스 및 활성화 상태 적용
-                >
-                  <tab.icon className="w-5 h-5 mr-2" />
-                  {tab.name}
-                </button>
-              );
-            })}
+      <div className="mypage-container">
+        <h1 className="mypage-title">마이페이지</h1>
+
+        <div className="mypage-box">
+          <div className="tab-nav">
+            {TABS.map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => handleTabChange(tab.key)}
+                className={`tab-btn ${
+                  tab.key === activeTabKey ? "active" : ""
+                }`}
+              >
+                <tab.icon size={18} style={{ marginRight: "8px" }} />
+                {tab.name}
+              </button>
+            ))}
           </div>
-          {/* 컨텐츠 영역 */}
-          <div className="mypage-content">{renderContent}</div>
+
+          <div className="tab-content">{renderContent}</div>
         </div>
       </div>
     </MainLayout>
   );
 };
+
 export default MyPage;

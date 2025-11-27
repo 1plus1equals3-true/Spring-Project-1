@@ -5,8 +5,8 @@ import com.youngjin.mcl_project.entity.BoardAttachmentsEntity;
 import com.youngjin.mcl_project.entity.BoardAttachmentsEntity.FileStatus;
 import com.youngjin.mcl_project.entity.BoardEntity;
 import com.youngjin.mcl_project.entity.BoardEntity.BoardType;
-import com.youngjin.mcl_project.entity.MemberEntity;
 import com.youngjin.mcl_project.entity.BoardRecommendEntity;
+import com.youngjin.mcl_project.entity.MemberEntity;
 import com.youngjin.mcl_project.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,6 +27,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor // final 필드에 대한 생성자 주입을 자동으로 처리
@@ -69,7 +70,7 @@ public class BoardService {
                     .orElse("알 수 없음");
 
             // 💡 댓글 수 조회
-            long commentCount = commentRepository.countByBoardIdx(entity.getIdx());
+            long commentCount = commentRepository.countByBoardIdxAndIsDeletedFalse(entity.getIdx());
 
             return BoardListResponse.builder()
                     .idx(entity.getIdx())
@@ -112,6 +113,9 @@ public class BoardService {
                 .map(FileAttachmentResponse::fromEntity)
                 .toList();
 
+        // 추가. 댓글 수 조회
+        long commentCount = commentRepository.countByBoardIdxAndIsDeletedFalse(idx);
+
         // ⭐️ 5. [핵심] 내가 추천했는지 확인 로직
         boolean isRecommended = false;
 
@@ -133,6 +137,7 @@ public class BoardService {
                 .content(entity.getContent())
                 .hit(entity.getHit())
                 .recommend(entity.getRecommend()) // 총 개수
+                .commentCount(commentCount)
                 .regdate(entity.getRegdate())
                 .moddate(entity.getModdate())
                 .authorNickname(nickname)
@@ -377,5 +382,62 @@ public class BoardService {
 
             return "추천하였습니다.";
         }
+    }
+
+    // 특정 유저의 최근 게시글 조회
+    public List<BoardListResponse> getMyRecentBoards(long memberIdx, int limit) {
+        Pageable pageable = PageRequest.of(0, limit);
+        return boardRepository.findByMemberIdxAndIsDeletedFalseOrderByRegdateDesc(memberIdx, pageable)
+                .stream()
+                .map(entity -> {
+                    long commentCount = commentRepository.countByBoardIdxAndIsDeletedFalse(entity.getIdx());
+                    return BoardListResponse.builder()
+                            .idx(entity.getIdx())
+                            .boardType(entity.getBoardType())
+                            .title(entity.getTitle())
+                            .hit(entity.getHit())
+                            .recommend(entity.getRecommend())
+                            .regdate(entity.getRegdate())
+                            // 내 글이니 닉네임은 굳이 DB 조회 안 해도 됨 (필요하면 추가)
+                            .commentCount(commentCount)
+                            .build();
+                })
+                .collect(Collectors.toList());
+    }
+
+    // 특정 유저의 최근 댓글 조회
+    public List<BoardCommentResponse> getMyRecentComments(long memberIdx, int limit) {
+        Pageable pageable = PageRequest.of(0, limit);
+        return commentRepository.findByMemberIdxAndIsDeletedFalseOrderByRegdateDesc(memberIdx, pageable)
+                .stream()
+                .map(BoardCommentResponse::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    // 내 게시글 전체 조회 (페이징)
+    public Page<BoardListResponse> getMyBoards(long memberIdx, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        return boardRepository.findByMemberIdxAndIsDeletedFalseOrderByRegdateDesc(memberIdx, pageable)
+                .map(entity -> {
+                    long commentCount = commentRepository.countByBoardIdxAndIsDeletedFalse(entity.getIdx());
+                    return BoardListResponse.builder()
+                            .idx(entity.getIdx())
+                            .boardType(entity.getBoardType())
+                            .title(entity.getTitle())
+                            .hit(entity.getHit())
+                            .recommend(entity.getRecommend())
+                            .regdate(entity.getRegdate())
+                            .commentCount(commentCount)
+                            .build();
+                });
+    }
+
+    // 내 댓글 전체 조회 (페이징)
+    public Page<BoardCommentResponse> getMyComments(long memberIdx, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        return commentRepository.findByMemberIdxAndIsDeletedFalseOrderByRegdateDesc(memberIdx, pageable)
+                .map(BoardCommentResponse::fromEntity);
     }
 }

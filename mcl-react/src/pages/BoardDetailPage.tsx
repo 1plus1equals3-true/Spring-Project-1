@@ -14,6 +14,16 @@ import {
 } from "lucide-react";
 import "../styles/BoardDetailPage.css";
 
+// 본문 렌더링 최적화 컴포넌트 ( 재 렌더링 방지 )
+const PostContent = React.memo(({ content }: { content: string }) => {
+  return (
+    <div
+      className="detail-content"
+      dangerouslySetInnerHTML={{ __html: content }}
+    />
+  );
+});
+
 // --- 타입 정의 ---
 
 interface BoardDetailResponse {
@@ -27,6 +37,7 @@ interface BoardDetailResponse {
   moddate: string | number[];
   authorNickname: string;
   isRecommended: boolean;
+  commentCount: number;
 }
 
 interface BoardCommentResponse {
@@ -65,14 +76,6 @@ interface CommentItemProps {
 }
 
 // 부모가 리렌더링 되어도 content prop이 안 바뀌면 다시 그리지 않음 (이미지 재로딩 방지)
-const PostContent = React.memo(({ content }: { content: string }) => {
-  return (
-    <div
-      className="detail-content"
-      dangerouslySetInnerHTML={{ __html: content }}
-    />
-  );
-});
 
 // ⭐️ [핵심] 컴포넌트 밖으로 꺼낸 CommentItem
 // 이제 BoardDetailPage가 리렌더링 되어도 이 컴포넌트는 유지되므로 포커스가 안 끊깁니다.
@@ -313,16 +316,6 @@ const BoardDetailPage: React.FC = () => {
     fetchData();
   }, [boardId]);
 
-  // ⭐️ [추가] 전체 댓글 수 계산 (Memoization으로 성능 최적화)
-  // comments 배열이 바뀔 때만 다시 계산합니다.
-  const totalCommentCount = React.useMemo(() => {
-    return comments.reduce((acc, curr) => {
-      // (현재 댓글 1개) + (그 댓글의 대댓글 개수)
-      const replyCount = curr.replies ? curr.replies.length : 0;
-      return acc + 1 + replyCount;
-    }, 0);
-  }, [comments]);
-
   // --- 핸들러 ---
 
   const handleRecommend = async () => {
@@ -459,10 +452,7 @@ const BoardDetailPage: React.FC = () => {
         <div className="detail-error-container">
           <AlertCircle size={40} />
           <p>{error}</p>
-          <button
-            onClick={() => navigate(`/board/${boardTypeUrl}`)}
-            className="back-btn"
-          >
+          <button onClick={() => navigate(-1)} className="back-btn">
             목록으로
           </button>
         </div>
@@ -485,11 +475,6 @@ const BoardDetailPage: React.FC = () => {
         </div>
 
         <div className="detail-content-wrapper">
-          {/* 기존 코드 (PostContent로 대체) */}
-          {/* <div
-            className="detail-content"
-            dangerouslySetInnerHTML={{ __html: post.content }}
-          /> */}
           <PostContent content={post.content} />
           <div className="detail-stats">
             <button
@@ -505,7 +490,7 @@ const BoardDetailPage: React.FC = () => {
               <span>추천 {post.recommend}</span>
             </button>
             <span className="stat-item">
-              <MessageSquare size={16} /> 댓글 {totalCommentCount}
+              <MessageSquare size={16} /> 댓글 {post.commentCount}
             </span>
           </div>
         </div>
@@ -513,7 +498,7 @@ const BoardDetailPage: React.FC = () => {
         <div className="detail-actions">
           <button
             className="action-btn back-to-list-btn"
-            onClick={() => navigate(`/board/${boardTypeUrl}`)}
+            onClick={() => navigate(-1)}
           >
             목록으로
           </button>
@@ -538,7 +523,7 @@ const BoardDetailPage: React.FC = () => {
         </div>
 
         <div className="comments-section">
-          <h3 className="comments-title">댓글 {totalCommentCount}개</h3>
+          <h3 className="comments-title">댓글 {post.commentCount}개</h3>
           {user ? (
             <form onSubmit={handleCommentSubmit} className="comment-form">
               <textarea

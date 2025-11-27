@@ -27,4 +27,7 @@ public interface BoardRepository extends JpaRepository<BoardEntity, Long> {
     // 4. (선택) 제목 또는 내용으로 검색
     Page<BoardEntity> findByTitleContainingOrContentContainingAndBoardTypeAndIsDeletedFalse(
             String titleKeyword, String contentKeyword, BoardType boardType, Pageable pageable);
+
+    // 특정 사용자의 최신 게시글 조회 (Pageable로 개수 제한)
+    Page<BoardEntity> findByMemberIdxAndIsDeletedFalseOrderByRegdateDesc(long memberIdx, Pageable pageable);
 }

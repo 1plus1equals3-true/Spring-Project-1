@@ -221,11 +221,11 @@ const PokeSampleEditorPage: React.FC = () => {
       if (isEditMode && id) {
         await apiClient.put(`/api/v1/poke-sample/${id}`, formData);
         alert("샘플이 수정되었습니다!");
-        navigate(`/poke-sample/${id}`);
+        navigate(`/poke-sample/${id}`, { replace: true });
       } else {
         const res = await apiClient.post("/api/v1/poke-sample", formData);
         alert("새로운 샘플이 등록되었습니다!");
-        navigate(`/poke-sample/${res.data}`);
+        navigate(`/poke-sample/${res.data}`, { replace: true });
       }
     } catch (err) {
       console.error(err);

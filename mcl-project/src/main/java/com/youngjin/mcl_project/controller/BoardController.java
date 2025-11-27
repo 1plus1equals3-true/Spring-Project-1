@@ -360,4 +360,38 @@ public class BoardController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류가 발생했습니다.");
         }
     }
+
+    // 활동기록 게시글 일괄 삭제
+    @DeleteMapping("/delete-batch")
+    public ResponseEntity<Void> deleteBoardsBatch(@RequestBody List<Long> boardIdxList) {
+        long memberIdx = getCurrentMemberIdx();
+        if (memberIdx == 0) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        // Service에 일괄 삭제 메서드 추가 필요 (반복문으로 deleteBoard 호출하거나 쿼리 사용)
+        // 편의상 반복문으로 처리 예시
+        for (Long idx : boardIdxList) {
+            try {
+                boardService.deleteBoard(idx, memberIdx);
+            } catch (Exception e) {
+                log.error("일괄 삭제 중 오류 (ID: {})", idx, e);
+            }
+        }
+        return ResponseEntity.ok().build();
+    }
+
+    // 활동기록 댓글 일괄 삭제
+    @DeleteMapping("/comment/delete-batch")
+    public ResponseEntity<Void> deleteCommentsBatch(@RequestBody List<Long> commentIdxList) {
+        long memberIdx = getCurrentMemberIdx();
+        if (memberIdx == 0) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        for (Long idx : commentIdxList) {
+            try {
+                boardCommentService.deleteComment(idx, memberIdx);
+            } catch (Exception e) {
+                log.error("댓글 일괄 삭제 중 오류 (ID: {})", idx, e);
+            }
+        }
+        return ResponseEntity.ok().build();
+    }
 }

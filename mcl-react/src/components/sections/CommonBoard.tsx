@@ -29,6 +29,7 @@ interface BoardItem {
   date: string;
   authorNickname: string;
   views: number;
+  commentCount: number;
 }
 
 interface CommonBoardProps {
@@ -94,6 +95,7 @@ const CommonBoard: React.FC<CommonBoardProps> = ({
             date: formattedDate,
             authorNickname: item.authorNickname || "관리자",
             views: item.hit || 0,
+            commentCount: item.commentCount || 0,
           };
         }
       );
@@ -186,7 +188,21 @@ const CommonBoard: React.FC<CommonBoardProps> = ({
                 data.map((item) => (
                   <tr key={item.id} onClick={() => handleRowClick(item.id)}>
                     <td className="text-gray">{item.id}</td>
-                    <td style={{ fontWeight: 500 }}>{item.title}</td>
+                    <td style={{ fontWeight: 500 }}>
+                      {item.title}
+                      {item.commentCount > 0 && (
+                        <span
+                          style={{
+                            marginLeft: "8px",
+                            color: "#f43f5e", // 붉은 계열 색상
+                            fontWeight: "bold",
+                            fontSize: "0.85rem",
+                          }}
+                        >
+                          [{item.commentCount}]
+                        </span>
+                      )}
+                    </td>
                     <td className="center text-gray">{item.authorNickname}</td>
                     <td className="center text-gray">{item.date}</td>
                     <td className="center text-gray">{item.views}</td>

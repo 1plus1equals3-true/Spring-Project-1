@@ -22,6 +22,8 @@ public class BoardDetailResponse {
     private LocalDateTime regdate;
     private LocalDateTime moddate;
 
+    private long commentCount;
+
     // ⭐️ JOIN 필요 필드
     private String authorNickname; // 작성자 닉네임
 

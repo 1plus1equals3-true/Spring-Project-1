@@ -40,6 +40,7 @@ interface PokeSampleDetailDTO {
   likeCount: number;
   isLiked: boolean;
   isMine: boolean;
+  commentCount: number;
   regdate: string | number[];
   visibility: "PUBLIC" | "PRIVATE";
 }
@@ -304,14 +305,6 @@ const PokeSampleDetailPage: React.FC = () => {
   useEffect(() => {
     if (sampleId) fetchDetail();
   }, [sampleId]);
-
-  // 댓글 수 계산
-  const totalCommentCount = useMemo(() => {
-    return comments.reduce((acc, curr) => {
-      const replyCount = curr.replies ? curr.replies.length : 0;
-      return acc + 1 + replyCount;
-    }, 0);
-  }, [comments]);
 
   // --- 핸들러 ---
 
@@ -601,7 +594,7 @@ const PokeSampleDetailPage: React.FC = () => {
             className="comments-title"
             style={{ display: "flex", alignItems: "center", gap: "8px" }}
           >
-            <MessageSquare size={20} /> 댓글 {totalCommentCount}개
+            <MessageSquare size={20} /> 댓글 {sample.commentCount}개
           </h3>
 
           {/* 댓글 작성 */}

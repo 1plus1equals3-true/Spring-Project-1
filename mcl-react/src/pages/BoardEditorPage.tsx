@@ -166,7 +166,7 @@ const BoardEditorPage: React.FC = () => {
         });
 
         setTimeout(() => {
-          navigate(`/board/${type}/${postId}`);
+          navigate(`/board/${type}/${postId}`, { replace: true });
         }, 1000);
       } else {
         // POST: 작성
@@ -188,7 +188,7 @@ const BoardEditorPage: React.FC = () => {
         });
 
         setTimeout(() => {
-          navigate(`/board/${type}/${newPostId}`);
+          navigate(`/board/${type}/${newPostId}`, { replace: true });
         }, 1000);
       }
     } catch (err) {
