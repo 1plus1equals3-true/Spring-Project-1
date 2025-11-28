@@ -1,6 +1,6 @@
 -- --------------------------------------------------------
 -- 호스트:                          127.0.0.1
--- 서버 버전:                        11.8.3-MariaDB - mariadb.org binary distribution
+-- 서버 버전:                        9.3.0 - MySQL Community Server - GPL
 -- 서버 OS:                        Win64
 -- HeidiSQL 버전:                  12.11.0.7065
 -- --------------------------------------------------------
@@ -17,21 +17,21 @@
 -- 테이블 mcl_project.board 구조 내보내기
 DROP TABLE IF EXISTS `board`;
 CREATE TABLE IF NOT EXISTS `board` (
-  `idx` int(11) NOT NULL AUTO_INCREMENT,
-  `member_idx` int(11) NOT NULL COMMENT 'FK',
+  `idx` int NOT NULL AUTO_INCREMENT,
+  `member_idx` int NOT NULL COMMENT 'FK',
   `board_type` enum('NOTICE','FREE') DEFAULT 'FREE',
   `title` varchar(200) NOT NULL,
   `content` text NOT NULL,
-  `hit` int(11) DEFAULT 0,
-  `recommend` int(11) DEFAULT 0,
+  `hit` int DEFAULT '0',
+  `recommend` int DEFAULT '0',
   `regdate` datetime NOT NULL,
   `moddate` datetime DEFAULT NULL,
   `ip` varchar(50) DEFAULT NULL,
-  `is_deleted` tinyint(1) DEFAULT 0,
+  `is_deleted` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`idx`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=105 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- 테이블 데이터 mcl_project.board:~102 rows (대략적) 내보내기
+-- 테이블 데이터 mcl_project.board:~101 rows (대략적) 내보내기
 INSERT INTO `board` (`idx`, `member_idx`, `board_type`, `title`, `content`, `hit`, `recommend`, `regdate`, `moddate`, `ip`, `is_deleted`) VALUES
 	(1, 8, 'FREE', '안녕하세요', '안녕안녕하세요', 3, 7, '2025-11-19 15:54:28', NULL, NULL, 0),
 	(2, 1, 'NOTICE', '[공지] 테스트 공지사항 입니다.', '안녕안녕하세요', 49, 9, '2025-11-19 15:54:28', NULL, NULL, 0),
@@ -58,8 +58,8 @@ INSERT INTO `board` (`idx`, `member_idx`, `board_type`, `title`, `content`, `hit
 	(23, 7, 'FREE', '새로운 로컬 이미지 첨부 테스트', '<p><img class="editor-image" src="https://192.168.0.190:8070/api/images/MCL/board/2025/11/21/ba236ccf-9ec0-4462-ac7f-f10ccb3d3271.webp">ㅇㅇ</p>', 42, 7, '2025-11-21 13:54:28', '2025-11-21 15:06:58', '127.0.0.1', 0),
 	(24, 7, 'FREE', '123', '<p>123</p>', 12, 2, '2025-11-21 14:17:33', '2025-11-21 16:19:38', '127.0.0.1', 1),
 	(25, 7, 'FREE', 'ㅇㄴㅁㅇㅁㄴ', '<p>ㅇㄴㅁㅇㅇㅇ</p>', 24, 9, '2025-11-21 14:51:15', '2025-11-21 16:19:16', '127.0.0.1', 1),
-	(26, 9, 'FREE', '잠만보', '<p><img class="editor-image" src="https://localhost:8070/api/images/MCL/board/2025/11/23/1fb875e8-31e4-49a4-a338-44a1cf634a82.png">잠만보</p>', 36, 6, '2025-11-23 02:25:18', NULL, '127.0.0.1', 0),
-	(27, 9, 'FREE', '쿠키 만료 후 작성 테스트', '<p>테스트</p>', 242, 10, '2025-11-23 21:17:45', NULL, '127.0.0.1', 0),
+	(26, 9, 'FREE', '잠만보', '<p><img class="editor-image" src="https://localhost:8070/api/images/MCL/board/2025/11/23/1fb875e8-31e4-49a4-a338-44a1cf634a82.png">잠만보</p>', 37, 6, '2025-11-23 02:25:18', NULL, '127.0.0.1', 0),
+	(27, 9, 'FREE', '마스터볼 찍었습니다.', '<p>굿</p>', 248, 10, '2025-11-23 21:17:45', '2025-11-28 11:45:54', '127.0.0.1', 0),
 	(28, 1, 'NOTICE', '[공지] 공지 공지', '<p>테스트</p>', 16, 4, '2025-11-24 09:39:01', NULL, '127.0.0.1', 0),
 	(29, 1, 'FREE', '삭제 예정인 글', '<p>ㅇㅇ<img class="editor-image" src="https://192.168.0.190:8070/api/images/MCL/board/2025/11/24/41b0b4f4-64bf-4132-816d-7c995278a38f.png"></p>', 8, 4, '2025-11-24 11:16:34', '2025-11-24 11:17:47', '127.0.0.1', 1),
 	(30, 11, 'FREE', 'ㅋㅋ문제점 발견 ㅋㅋㅋㅋ', '<p><img class="editor-image" src="https://192.168.0.190:8070/api/images/MCL/board/2025/11/25/a38cf045-1e57-4473-988c-e36bfae38101.png">ㅈㄱㄴ</p>', 31, 0, '2025-11-25 14:07:50', NULL, '127.0.0.1', 0),
@@ -134,20 +134,22 @@ INSERT INTO `board` (`idx`, `member_idx`, `board_type`, `title`, `content`, `hit
 	(99, 28, 'FREE', '실전 개체 뽑다가 이로치 나왔네요 ㄷㄷ', '포켓몬 샘플 공유 커뮤니티 너무 좋네요.\n다들 즐겁게 게임합시다.\n(본문 내용은 임시 데이터입니다.)', 314, 3, '2025-11-10 02:41:08', NULL, NULL, 0),
 	(100, 22, 'FREE', '포켓몬 교환하실 분 구합니다 (바이올렛)', '포켓몬 샘플 공유 커뮤니티 너무 좋네요.\n다들 즐겁게 게임합시다.\n(본문 내용은 임시 데이터입니다.)', 396, 8, '2025-11-20 02:41:08', NULL, NULL, 0),
 	(101, 12, 'FREE', '망나뇽 멀티스케일 뚫는 법 좀 알려주세요.', '포켓몬 샘플 공유 커뮤니티 너무 좋네요.\n다들 즐겁게 게임합시다.\n(본문 내용은 임시 데이터입니다.)', 65, 7, '2025-11-16 02:41:08', NULL, NULL, 0),
-	(102, 22, 'FREE', '더블배틀 파티 조언 부탁드립니다.', '포켓몬 샘플 공유 커뮤니티 너무 좋네요.\n다들 즐겁게 게임합시다.\n(본문 내용은 임시 데이터입니다.)', 101, 4, '2025-11-07 02:41:08', NULL, NULL, 0);
+	(102, 22, 'FREE', '더블배틀 파티 조언 부탁드립니다.', '포켓몬 샘플 공유 커뮤니티 너무 좋네요.\n다들 즐겁게 게임합시다.\n(본문 내용은 임시 데이터입니다.)', 101, 4, '2025-11-07 02:41:08', NULL, NULL, 0),
+	(103, 32, 'FREE', 'eweqwe', '<p><strong><em>ewqeq</em></strong><img class="editor-image" src="https://192.168.0.190:8070/api/images/MCL/board/2025/11/28/00502690-d65a-4fe6-87d0-15efa66fc0a6.jpg"></p>', 3, 0, '2025-11-28 10:37:11', '2025-11-28 10:37:35', '127.0.0.1', 0),
+	(104, 9, 'FREE', '아구몬', '<p></p><p><img class="editor-image" src="https://wikimon.net/images/b/b2/Agumon_vpet_dpc.gif"></p>', 2, 0, '2025-11-28 16:06:51', NULL, '127.0.0.1', 0);
 
 -- 테이블 mcl_project.board_attachments 구조 내보내기
 DROP TABLE IF EXISTS `board_attachments`;
 CREATE TABLE IF NOT EXISTS `board_attachments` (
-  `idx` int(11) NOT NULL AUTO_INCREMENT,
-  `board_idx` int(11) DEFAULT NULL COMMENT 'FK',
+  `idx` int NOT NULL AUTO_INCREMENT,
+  `board_idx` int DEFAULT NULL COMMENT 'FK',
   `dir` varchar(200) NOT NULL,
   `stored_name` varchar(200) NOT NULL,
   `original_name` varchar(200) NOT NULL,
   `status` enum('TEMP','ACTIVE') NOT NULL DEFAULT 'TEMP',
   `regdate` datetime NOT NULL,
   PRIMARY KEY (`idx`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- 테이블 데이터 mcl_project.board_attachments:~5 rows (대략적) 내보내기
 INSERT INTO `board_attachments` (`idx`, `board_idx`, `dir`, `stored_name`, `original_name`, `status`, `regdate`) VALUES
@@ -155,23 +157,24 @@ INSERT INTO `board_attachments` (`idx`, `board_idx`, `dir`, `stored_name`, `orig
 	(2, 22, '2025/11/21', '46222a60-54b1-44f6-8eda-c183e97c3e7a.webp', 'doro.webp', 'ACTIVE', '2025-11-21 13:16:37'),
 	(8, 23, '2025/11/21', 'ba236ccf-9ec0-4462-ac7f-f10ccb3d3271.webp', 'doro.webp', 'ACTIVE', '2025-11-21 15:06:57'),
 	(9, 26, '2025/11/23', '1fb875e8-31e4-49a4-a338-44a1cf634a82.png', '80131880_p0.png', 'ACTIVE', '2025-11-23 02:24:53'),
-	(11, 30, '2025/11/25', 'a38cf045-1e57-4473-988c-e36bfae38101.png', 'profile.png', 'ACTIVE', '2025-11-25 14:07:33');
+	(11, 30, '2025/11/25', 'a38cf045-1e57-4473-988c-e36bfae38101.png', 'profile.png', 'ACTIVE', '2025-11-25 14:07:33'),
+	(13, 103, '2025/11/28', '00502690-d65a-4fe6-87d0-15efa66fc0a6.jpg', '평가지_채점기준표002.jpg', 'ACTIVE', '2025-11-28 10:37:32');
 
 -- 테이블 mcl_project.board_comments 구조 내보내기
 DROP TABLE IF EXISTS `board_comments`;
 CREATE TABLE IF NOT EXISTS `board_comments` (
-  `idx` int(11) NOT NULL AUTO_INCREMENT,
-  `board_idx` int(11) NOT NULL COMMENT 'FK',
-  `member_idx` int(11) NOT NULL,
+  `idx` int NOT NULL AUTO_INCREMENT,
+  `board_idx` int NOT NULL COMMENT 'FK',
+  `member_idx` int NOT NULL,
   `ment` text NOT NULL,
   `regdate` datetime NOT NULL,
   `moddate` datetime DEFAULT NULL,
   `is_deleted` tinyint(1) NOT NULL,
-  `parent_idx` int(11) DEFAULT NULL,
+  `parent_idx` int DEFAULT NULL,
   PRIMARY KEY (`idx`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=45 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=553 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- 테이블 데이터 mcl_project.board_comments:~44 rows (대략적) 내보내기
+-- 테이블 데이터 mcl_project.board_comments:~552 rows (대략적) 내보내기
 INSERT INTO `board_comments` (`idx`, `board_idx`, `member_idx`, `ment`, `regdate`, `moddate`, `is_deleted`, `parent_idx`) VALUES
 	(1, 27, 9, '댓글', '2025-11-24 00:27:10', NULL, 0, NULL),
 	(2, 27, 9, '댓글 2', '2025-11-24 00:28:01', NULL, 0, NULL),
@@ -729,14 +732,14 @@ INSERT INTO `board_comments` (`idx`, `board_idx`, `member_idx`, `ment`, `regdate
 -- 테이블 mcl_project.board_recommend 구조 내보내기
 DROP TABLE IF EXISTS `board_recommend`;
 CREATE TABLE IF NOT EXISTS `board_recommend` (
-  `idx` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'PK',
-  `member_idx` bigint(20) NOT NULL COMMENT '추천한 사람 FK',
-  `board_idx` bigint(20) NOT NULL COMMENT '추천된 게시글 FK',
+  `idx` bigint NOT NULL AUTO_INCREMENT COMMENT 'PK',
+  `member_idx` bigint NOT NULL COMMENT '추천한 사람 FK',
+  `board_idx` bigint NOT NULL COMMENT '추천된 게시글 FK',
   PRIMARY KEY (`idx`),
   UNIQUE KEY `uk_recommend_member_board` (`member_idx`,`board_idx`)
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='게시글 추천 로그';
+) ENGINE=InnoDB AUTO_INCREMENT=566 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='게시글 추천 로그';
 
--- 테이블 데이터 mcl_project.board_recommend:~4 rows (대략적) 내보내기
+-- 테이블 데이터 mcl_project.board_recommend:~510 rows (대략적) 내보내기
 INSERT INTO `board_recommend` (`idx`, `member_idx`, `board_idx`) VALUES
 	(13, 9, 27),
 	(14, 9, 26),
@@ -1252,7 +1255,7 @@ INSERT INTO `board_recommend` (`idx`, `member_idx`, `board_idx`) VALUES
 -- 테이블 mcl_project.category 구조 내보내기
 DROP TABLE IF EXISTS `category`;
 CREATE TABLE IF NOT EXISTS `category` (
-  `idx` int(11) NOT NULL AUTO_INCREMENT,
+  `idx` int NOT NULL AUTO_INCREMENT,
   `userid` varchar(50) NOT NULL COMMENT 'FK',
   `category` varchar(50) NOT NULL,
   `type` enum('TEXT','SELECT','DATE') NOT NULL,
@@ -1264,10 +1267,10 @@ CREATE TABLE IF NOT EXISTS `category` (
 -- 테이블 mcl_project.category_list 구조 내보내기
 DROP TABLE IF EXISTS `category_list`;
 CREATE TABLE IF NOT EXISTS `category_list` (
-  `idx` int(11) NOT NULL AUTO_INCREMENT,
-  `category_idx` int(11) NOT NULL COMMENT 'FK',
+  `idx` int NOT NULL AUTO_INCREMENT,
+  `category_idx` int NOT NULL COMMENT 'FK',
   `value` varchar(50) NOT NULL,
-  `sort` int(11) DEFAULT 0,
+  `sort` int DEFAULT '0',
   PRIMARY KEY (`idx`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -1276,8 +1279,8 @@ CREATE TABLE IF NOT EXISTS `category_list` (
 -- 테이블 mcl_project.collection 구조 내보내기
 DROP TABLE IF EXISTS `collection`;
 CREATE TABLE IF NOT EXISTS `collection` (
-  `idx` int(11) NOT NULL AUTO_INCREMENT,
-  `group_idx` int(11) DEFAULT NULL COMMENT 'FK',
+  `idx` int NOT NULL AUTO_INCREMENT,
+  `group_idx` int DEFAULT NULL COMMENT 'FK',
   `userid` varchar(50) NOT NULL COMMENT 'FK',
   `item` varchar(50) NOT NULL,
   `regdate` datetime DEFAULT NULL,
@@ -1290,7 +1293,7 @@ CREATE TABLE IF NOT EXISTS `collection` (
 -- 테이블 mcl_project.collection_attachments 구조 내보내기
 DROP TABLE IF EXISTS `collection_attachments`;
 CREATE TABLE IF NOT EXISTS `collection_attachments` (
-  `idx` int(11) NOT NULL AUTO_INCREMENT,
+  `idx` int NOT NULL AUTO_INCREMENT,
   `userid` varchar(50) DEFAULT NULL COMMENT 'FK',
   `dir` varchar(50) NOT NULL,
   `stored_name` varchar(200) NOT NULL,
@@ -1304,8 +1307,8 @@ CREATE TABLE IF NOT EXISTS `collection_attachments` (
 -- 테이블 mcl_project.collection_attachments_mapping 구조 내보내기
 DROP TABLE IF EXISTS `collection_attachments_mapping`;
 CREATE TABLE IF NOT EXISTS `collection_attachments_mapping` (
-  `attachments_idx` int(11) NOT NULL,
-  `collection_idx` int(11) NOT NULL,
+  `attachments_idx` int NOT NULL,
+  `collection_idx` int NOT NULL,
   PRIMARY KEY (`attachments_idx`,`collection_idx`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -1314,9 +1317,9 @@ CREATE TABLE IF NOT EXISTS `collection_attachments_mapping` (
 -- 테이블 mcl_project.collection_category_value 구조 내보내기
 DROP TABLE IF EXISTS `collection_category_value`;
 CREATE TABLE IF NOT EXISTS `collection_category_value` (
-  `idx` int(11) NOT NULL AUTO_INCREMENT,
-  `collection_idx` int(11) NOT NULL COMMENT 'FK - 묶어 유니크',
-  `category_idx` int(11) NOT NULL COMMENT 'FK - 묶어 유니크',
+  `idx` int NOT NULL AUTO_INCREMENT,
+  `collection_idx` int NOT NULL COMMENT 'FK - 묶어 유니크',
+  `category_idx` int NOT NULL COMMENT 'FK - 묶어 유니크',
   `value` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`idx`) USING BTREE,
   UNIQUE KEY `UQ_collection_category` (`collection_idx`,`category_idx`) USING BTREE
@@ -1327,10 +1330,10 @@ CREATE TABLE IF NOT EXISTS `collection_category_value` (
 -- 테이블 mcl_project.collection_group 구조 내보내기
 DROP TABLE IF EXISTS `collection_group`;
 CREATE TABLE IF NOT EXISTS `collection_group` (
-  `idx` int(11) NOT NULL AUTO_INCREMENT,
+  `idx` int NOT NULL AUTO_INCREMENT,
   `userid` varchar(50) NOT NULL COMMENT 'FK',
   `title` varchar(100) NOT NULL,
-  `description` text DEFAULT NULL,
+  `description` text,
   `regdate` datetime DEFAULT NULL,
   `moddate` datetime DEFAULT NULL,
   PRIMARY KEY (`idx`) USING BTREE
@@ -1342,9 +1345,9 @@ CREATE TABLE IF NOT EXISTS `collection_group` (
 DROP TABLE IF EXISTS `collection_option`;
 CREATE TABLE IF NOT EXISTS `collection_option` (
   `userid` varchar(50) NOT NULL COMMENT 'FK',
-  `quick` tinyint(1) DEFAULT 0,
-  `category1` int(11) DEFAULT NULL COMMENT 'category idx',
-  `category2` int(11) DEFAULT NULL COMMENT 'category idx',
+  `quick` tinyint(1) DEFAULT '0',
+  `category1` int DEFAULT NULL COMMENT 'category idx',
+  `category2` int DEFAULT NULL COMMENT 'category idx',
   PRIMARY KEY (`userid`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -1353,13 +1356,13 @@ CREATE TABLE IF NOT EXISTS `collection_option` (
 -- 테이블 mcl_project.member 구조 내보내기
 DROP TABLE IF EXISTS `member`;
 CREATE TABLE IF NOT EXISTS `member` (
-  `idx` int(11) NOT NULL AUTO_INCREMENT,
+  `idx` int NOT NULL AUTO_INCREMENT,
   `userid` varchar(50) NOT NULL,
   `pwd` varchar(200) NOT NULL,
   `nickname` varchar(50) NOT NULL,
   `birth` date DEFAULT NULL,
   `file` varchar(200) DEFAULT NULL,
-  `grade` int(11) DEFAULT 1,
+  `grade` int DEFAULT '1',
   `regdate` datetime NOT NULL,
   `provider` varchar(50) DEFAULT NULL,
   `provider_id` varchar(50) DEFAULT NULL,
@@ -1367,7 +1370,7 @@ CREATE TABLE IF NOT EXISTS `member` (
   PRIMARY KEY (`idx`) USING BTREE,
   UNIQUE KEY `userid` (`userid`) USING BTREE,
   UNIQUE KEY `nickname` (`nickname`)
-) ENGINE=InnoDB AUTO_INCREMENT=32 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- 테이블 데이터 mcl_project.member:~31 rows (대략적) 내보내기
 INSERT INTO `member` (`idx`, `userid`, `pwd`, `nickname`, `birth`, `file`, `grade`, `regdate`, `provider`, `provider_id`, `refresh_token`) VALUES
@@ -1379,7 +1382,7 @@ INSERT INTO `member` (`idx`, `userid`, `pwd`, `nickname`, `birth`, `file`, `grad
 	(6, 'gksrmf', '$2a$10$S6Vc85ILjSpkn9v6mEa/e.qZuaK6rPwZQHAAlGp6NDJ7U8Uybfam.', '세종대왕', '1446-10-09', 'MCL/profile/20251112/f1884226-c2e7-45da-96b5-8c1bc477d751.webp', 1, '2025-11-12 16:23:53', 'LOCAL', 'gksrmf', 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJna3NybWYiLCJleHAiOjE3NjM2MjI2NTV9.G4I7EiEvMDLNDL4A7jXr8H_aNFNCF-PollUKvm9QEVt4KU1_Thpy9xjl5sKnxqXy3jUeMPt6P2BAPLEkzHHbOQ'),
 	(7, 'butter', '$2a$10$IbESdILW.0HFsSoCq18gA.jGSu5YNbVxhk0SyGtROeIS8alGds6we', '버터', '2022-02-02', 'MCL/profile/20251121/c972364c-775d-4fcf-aac0-99387889f708.webp', 1, '2025-11-13 16:20:54', 'LOCAL', 'butter', 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJidXR0ZXIiLCJleHAiOjE3NjQ3NDcxMTV9.TL2_3XFMUQwCWh7v5r4Icopbt2TydWNfabu7NtlP2SCPHtLWtrznMVJieRUAMGbC9lbSA6On0njgeiaUQJUfew'),
 	(8, 'testid', '$2a$10$qlE2wH0xGQ9tUuEyIYzcnO5qMBIA08dKWzvsh5kIkYfGxBiBtiCaa', '위베어베어스', '2000-01-01', 'MCL/profile/20251127/35a218de-2ef0-4acc-95a2-9365963ab866.webp', 1, '2025-11-17 09:32:16', 'LOCAL', 'testid', 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZXN0aWQiLCJleHAiOjE3NjQ4NzE2NDh9.XxkJzmzGwOXa5MusHjdIfVY1RZC1csVGfyBl6aY7iJ7gQRNZxtTd6t_WvbFPamYis0uB1WY_Jyh6lnCv27Df6w'),
-	(9, 'wkaaksqh', '$2a$10$.3bLbgHkAHcfGNudmT/qiOZ25RO8Uw8fKC8PmKi9J.aRtWUzClIgy', '잠만보', '2000-01-01', 'MCL/profile/20251123/b0387b5f-ad6e-40fa-bccf-a4211ddbea69.png', 1, '2025-11-23 02:21:37', 'LOCAL', 'wkaaksqh', 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ3a2Fha3NxaCIsImV4cCI6MTc2NDg3MTk0MH0.Y-htMSAdJclRCFCXJEVuO96lTwcgCfJeLwYvWUFu2EamF2-PXj-HAWARZ3PoNQE6FAWu2DpkUfA-1z3SR9ZQsw'),
+	(9, 'wkaaksqh', '$2a$10$.3bLbgHkAHcfGNudmT/qiOZ25RO8Uw8fKC8PmKi9J.aRtWUzClIgy', '잠만보', '2000-01-01', 'MCL/profile/20251123/b0387b5f-ad6e-40fa-bccf-a4211ddbea69.png', 1, '2025-11-23 02:21:37', 'LOCAL', 'wkaaksqh', 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ3a2Fha3NxaCIsImV4cCI6MTc2NDkxODQxMX0.Cb3zwe13ZIS5G11ciJBLwlzAYP7iCZrFAZzJ_0gWusJsskmcmrch3_vcudbRL_SjJJ8b5X43U4ALitDPahcXJQ'),
 	(10, 'gkswldn', '$2a$10$1v22weeN5zysiVMPjaRzs./P0QX6ft.2wYsuCKDX3uZpyHaMKy5S.', '지우', '2000-01-01', 'MCL/profile/20251128/7f1c08ab-bf33-4f19-82a8-39ecc3c1732c.png', 1, '2025-11-23 03:21:37', 'LOCAL', 'gkswldn', 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJna3N3bGRuIiwiZXhwIjoxNzY0ODY4MzEwfQ.NpEtUT-vwn81wG9N_f-UDCMwiQ6jt3hA5yabJzO4knyy7RN4RxK2Iq0x4oDKToTO0aBy8FICJg2DgZTul8dcrw'),
 	(11, 'erer1', '$2a$10$SRU1uNVLmLekf7MqhtrV1.P5YyhvpYjtu/FidWARhbH9hK4T5qSjS', '명기', '2025-12-01', 'MCL/profile/20251125/63f57dd4-d047-4982-88ae-f0b4bbd1964a.png', 1, '2025-11-25 14:02:00', 'LOCAL', 'erer1', 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJlcmVyMSIsImV4cCI6MTc2NDY1MTczMH0.mALd5GUxv-wWmDpzwTGnw6YcqZ7C0fNxhUOVxroq-MWqiPlOYFBgz4jrG13u58XZiIshzbQtd77vFk2u35QVKg'),
 	(12, 'dkrnahs', '$2a$10$JysVHo2SmQZk56M.mJtdHuI5XrGBwkC0d2ovUf8w2MvmOFzVbzo3C', '아구몬', '1999-03-07', 'MCL/profile/20251126/177a5812-4f8b-4a66-82ed-abb42cf0ff4d.jpg', 1, '2025-11-26 16:36:28', 'LOCAL', 'dkrnahs', 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJka3JuYWhzIiwiZXhwIjoxNzY0ODcwMzIxfQ.0WeySQkP2iLze7ZeK49PkZDkf_PYKwj7cdYOA7xZT6c4XR1KSFmjkXgr4t1OIpObiVSNM0g_DI0Q1aQUwdMosQ'),
@@ -1401,14 +1404,15 @@ INSERT INTO `member` (`idx`, `userid`, `pwd`, `nickname`, `birth`, `file`, `grad
 	(28, 'goh_catcher', '$2a$10$fNV3d0PB8dEkzf8Ij7b9TeCnnw9Cv1KtDM/2IchC1QLmybHJE5gMW', '고우', NULL, NULL, 1, '2025-11-28 02:21:14', 'local', 'goh_catcher', NULL),
 	(29, 'bea_fighting', '$2a$10$fNV3d0PB8dEkzf8Ij7b9TeCnnw9Cv1KtDM/2IchC1QLmybHJE5gMW', '채두', NULL, NULL, 1, '2025-11-28 02:21:14', 'local', 'bea_fighting', NULL),
 	(30, 'leon_champ', '$2a$10$fNV3d0PB8dEkzf8Ij7b9TeCnnw9Cv1KtDM/2IchC1QLmybHJE5gMW', '단델', NULL, NULL, 1, '2025-11-28 02:21:14', 'local', 'leon_champ', NULL),
-	(31, 'rlqhs', '$2a$10$fNV3d0PB8dEkzf8Ij7b9TeCnnw9Cv1KtDM/2IchC1QLmybHJE5gMW', '포켓몬밀렵꾼', NULL, NULL, 1, '2025-11-28 02:23:16', 'LOCAL', 'rlqhs', 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJybHFocyIsImV4cCI6MTc2NDg2OTQxMn0.w8QaSyF28ioZPfv67Bl95ljAMNXSKlj-v79NO75wrHrwpif5hmGq9LOk5JcHGrDHlzxfpwLXAc7KP-spYIuhzw');
+	(31, 'rlqhs', '$2a$10$fNV3d0PB8dEkzf8Ij7b9TeCnnw9Cv1KtDM/2IchC1QLmybHJE5gMW', '포켓몬밀렵꾼', NULL, NULL, 1, '2025-11-28 02:23:16', 'LOCAL', 'rlqhs', 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJybHFocyIsImV4cCI6MTc2NDg2OTQxMn0.w8QaSyF28ioZPfv67Bl95ljAMNXSKlj-v79NO75wrHrwpif5hmGq9LOk5JcHGrDHlzxfpwLXAc7KP-spYIuhzw'),
+	(32, 'dkdlel', '$2a$10$Cf/KEuGYzSrwkTuxrxEebupdMTdNvjDofhIuBWXV.He9s0CGA3TSW', '신규유저', '2019-02-14', NULL, 1, '2025-11-28 10:35:12', 'LOCAL', 'dkdlel', 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJka2RsZWwiLCJleHAiOjE3NjQ4OTg1MzJ9.fo5ChWXwdtBf9giv7oEbMsqzrNbrnA1O_9ZTEC9CXxtEE-IJOKEDSsNQtoLFZWwy7kfm9LIKgBXhpF0UWyl8sg');
 
 -- 테이블 mcl_project.poke_sample 구조 내보내기
 DROP TABLE IF EXISTS `poke_sample`;
 CREATE TABLE IF NOT EXISTS `poke_sample` (
-  `idx` int(11) NOT NULL AUTO_INCREMENT,
-  `member_idx` int(11) NOT NULL DEFAULT 0 COMMENT '작성자 ID',
-  `pokemon_idx` int(11) NOT NULL COMMENT '전국도감 번호',
+  `idx` int NOT NULL AUTO_INCREMENT,
+  `member_idx` int NOT NULL DEFAULT '0' COMMENT '작성자 ID',
+  `pokemon_idx` int NOT NULL COMMENT '전국도감 번호',
   `pokemon_name` varchar(50) NOT NULL COMMENT '표시용 한글 이름 저장',
   `tera_type` varchar(20) NOT NULL COMMENT '테라스탈 타입',
   `item` varchar(50) NOT NULL COMMENT '지닌 도구',
@@ -1420,17 +1424,17 @@ CREATE TABLE IF NOT EXISTS `poke_sample` (
   `move2` varchar(50) NOT NULL,
   `move3` varchar(50) NOT NULL,
   `move4` varchar(50) NOT NULL,
-  `description` text DEFAULT NULL COMMENT '운용법 설명',
+  `description` text COMMENT '운용법 설명',
   `visibility` enum('PUBLIC','PRIVATE') NOT NULL DEFAULT 'PUBLIC' COMMENT '공개 여부',
-  `regdate` datetime DEFAULT current_timestamp(),
-  `moddate` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `like_count` int(11) NOT NULL DEFAULT 0 COMMENT '좋아요 수',
-  `hit` int(11) NOT NULL DEFAULT 0 COMMENT '조회수',
-  `is_deleted` tinyint(1) NOT NULL DEFAULT 0 COMMENT '삭제 여부',
+  `regdate` datetime DEFAULT CURRENT_TIMESTAMP,
+  `moddate` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `like_count` int NOT NULL DEFAULT '0' COMMENT '좋아요 수',
+  `hit` int NOT NULL DEFAULT '0' COMMENT '조회수',
+  `is_deleted` tinyint(1) NOT NULL DEFAULT '0' COMMENT '삭제 여부',
   PRIMARY KEY (`idx`),
   KEY `idx_pokemon_idx` (`pokemon_idx`),
   KEY `idx_member_idx` (`member_idx`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=65 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- 테이블 데이터 mcl_project.poke_sample:~62 rows (대략적) 내보내기
 INSERT INTO `poke_sample` (`idx`, `member_idx`, `pokemon_idx`, `pokemon_name`, `tera_type`, `item`, `nature`, `ability`, `ivs`, `evs`, `move1`, `move2`, `move3`, `move4`, `description`, `visibility`, `regdate`, `moddate`, `like_count`, `hit`, `is_deleted`) VALUES
@@ -1478,7 +1482,7 @@ INSERT INTO `poke_sample` (`idx`, `member_idx`, `pokemon_idx`, `pokemon_name`, `
 	(42, 18, 479, '로토무', '노말', '기합의띠', '신중', '위협', '31/31/31/x/31/31', 'H244 A252 S12', '10만볼트', '대타출동', '오물폭탄', '야습', '이 샘플은 8세대 환경에서 유행하는 형태입니다.\n사용 난이도가 낮고 강력합니다.', 'PUBLIC', '2025-10-18 02:53:58', '2025-11-28 03:03:05', 6, 279, 0),
 	(43, 25, 635, '삼삼드래', '얼음', '구애스카프', '명랑', '위협', '31/31/31/31/31/0', 'H252 B252 D4', '역린', '용의춤', '냉동빔', '불릿펀치', '이 샘플은 7세대 환경에서 유행하는 형태입니다.\n사용 난이도가 낮고 강력합니다.', 'PRIVATE', '2025-11-05 02:53:58', '2025-11-28 02:53:58', 5, 268, 0),
 	(44, 12, 445, '한카리아스', '격투', '구애스카프', '고집', '멀티스케일', '31/31/31/31/31/0', 'H252 B252 D4', '파도타기', '도깨비불', '오물폭탄', '불릿펀치', '이 샘플은 4세대 환경에서 유행하는 형태입니다.\n사용 난이도가 낮고 강력합니다.', 'PUBLIC', '2025-11-15 02:53:58', '2025-11-28 03:02:23', 7, 301, 0),
-	(45, 7, 887, '드래펄트', '노말', '구애머리띠', '장난꾸러기', '위협', '31/31/31/31/31/0', 'A252 S252 H4', '화염방사', '용의춤', '유턴', '신속', '이 샘플은 3세대 환경에서 유행하는 형태입니다.\n사용 난이도가 낮고 강력합니다.', 'PUBLIC', '2025-11-28 02:53:58', '2025-11-28 03:04:52', 8, 230, 0),
+	(45, 7, 887, '드래펄트', '노말', '구애머리띠', '장난꾸러기', '위협', '31/31/31/31/31/0', 'A252 S252 H4', '화염방사', '용의춤', '유턴', '신속', '이 샘플은 3세대 환경에서 유행하는 형태입니다.\n사용 난이도가 낮고 강력합니다.', 'PUBLIC', '2025-11-28 02:53:58', '2025-11-28 12:23:26', 9, 237, 0),
 	(46, 27, 635, '삼삼드래', '풀', '구애머리띠', '신중', '탈', '31/31/31/31/31/0', 'C252 S252 B4', '화염방사', '칼춤', '탁쳐서떨구기', '신속', '이 샘플은 2세대 환경에서 유행하는 형태입니다.\n사용 난이도가 낮고 강력합니다.', 'PRIVATE', '2025-10-05 02:53:58', '2025-11-28 03:04:16', 7, 289, 0),
 	(47, 23, 212, '핫삼', '노말', '먹다남은음식', '신중', '탈', '31/31/31/31/31/0', 'H244 A252 S12', '역린', '도깨비불', '냉동빔', '야습', '이 샘플은 7세대 환경에서 유행하는 형태입니다.\n사용 난이도가 낮고 강력합니다.', 'PRIVATE', '2025-10-26 02:53:58', '2025-11-28 03:11:40', 7, 156, 0),
 	(48, 12, 282, '가디안', '물', '돌격조끼', '조심', '부유', '31/31/31/x/31/31', 'H4 C252 S252', '지진', '대타출동', '탁쳐서떨구기', '기습', '이 샘플은 1세대 환경에서 유행하는 형태입니다.\n사용 난이도가 낮고 강력합니다.', 'PUBLIC', '2025-11-27 02:53:58', '2025-11-28 03:01:40', 6, 209, 0),
@@ -1495,23 +1499,25 @@ INSERT INTO `poke_sample` (`idx`, `member_idx`, `pokemon_idx`, `pokemon_name`, `
 	(59, 5, 479, '로토무', '페어리', '기합의띠', '겁쟁이', '탈', '31/31/31/31/31/0', 'A252 S252 H4', '파도타기', '나쁜음모', '사이코키네시스', '불릿펀치', '이 샘플은 5세대 환경에서 유행하는 형태입니다.\n사용 난이도가 낮고 강력합니다.', 'PRIVATE', '2025-10-02 02:53:58', '2025-11-28 03:03:05', 8, 123, 0),
 	(60, 21, 448, '루카리오', '격투', '기합의띠', '조심', '멀티스케일', '31/0/31/31/31/31', 'H252 B252 D4', '역린', '방어', '오물폭탄', '불릿펀치', '이 샘플은 1세대 환경에서 유행하는 형태입니다.\n사용 난이도가 낮고 강력합니다.', 'PUBLIC', '2025-10-13 02:53:58', '2025-11-28 03:10:44', 3, 121, 0),
 	(61, 24, 6, '리자몽', '강철', '생명의구슬', '겁쟁이', '부유', '31/0/31/31/31/31', 'A252 S252 H4', '섀도볼', '칼춤', '사이코키네시스', '신속', '이 샘플은 7세대 환경에서 유행하는 형태입니다.\n사용 난이도가 낮고 강력합니다.', 'PUBLIC', '2025-10-27 02:53:58', '2025-11-28 02:58:33', 7, 160, 0),
-	(62, 7, 635, '삼삼드래', '전기', '울퉁불퉁멧', '장난꾸러기', '부유', '31/31/31/x/31/31', 'H252 B252 D4', '화염방사', '방어', '사이코키네시스', '신속', '이 샘플은 5세대 환경에서 유행하는 형태입니다.\n사용 난이도가 낮고 강력합니다.', 'PUBLIC', '2025-10-30 02:53:58', '2025-11-28 03:04:16', 3, 31, 0);
+	(62, 7, 635, '삼삼드래', '전기', '울퉁불퉁멧', '장난꾸러기', '부유', '31/31/31/x/31/31', 'H252 B252 D4', '화염방사', '방어', '사이코키네시스', '신속', '이 샘플은 5세대 환경에서 유행하는 형태입니다.\n사용 난이도가 낮고 강력합니다.', 'PUBLIC', '2025-10-30 02:53:58', '2025-11-28 03:04:16', 3, 31, 0),
+	(63, 32, 6, '리자몽', '전기', '부드러운모래', '무사태평', '선파워', '31/31/31/31/31/31', 'H152 A168 B176 C12', '기가임팩트', '날개치기', '불꽃세례', '불꽃세례', '사용법', 'PRIVATE', '2025-11-28 10:39:59', '2025-11-28 10:42:03', 0, 6, 0),
+	(64, 32, 4, '파이리', '에스퍼', '휘어진스푼', '수줍음', '맹화', '0/0/30/30/31/31', '0', '도우미', '도우미', '도깨비불', '대타출동', '', 'PUBLIC', '2025-11-28 10:45:26', '2025-11-28 10:46:14', 0, 2, 0);
 
 -- 테이블 mcl_project.poke_sample_comment 구조 내보내기
 DROP TABLE IF EXISTS `poke_sample_comment`;
 CREATE TABLE IF NOT EXISTS `poke_sample_comment` (
-  `idx` int(11) NOT NULL AUTO_INCREMENT,
-  `poke_sample_idx` int(11) NOT NULL COMMENT '어떤 샘플에 달린 댓글인지 (FK)',
-  `member_idx` int(11) NOT NULL COMMENT '작성자 (FK)',
-  `parent_idx` int(11) DEFAULT NULL COMMENT '대댓글인 경우 부모 댓글 ID',
+  `idx` int NOT NULL AUTO_INCREMENT,
+  `poke_sample_idx` int NOT NULL COMMENT '어떤 샘플에 달린 댓글인지 (FK)',
+  `member_idx` int NOT NULL COMMENT '작성자 (FK)',
+  `parent_idx` int DEFAULT NULL COMMENT '대댓글인 경우 부모 댓글 ID',
   `ment` text NOT NULL,
-  `regdate` datetime DEFAULT current_timestamp(),
-  `moddate` datetime DEFAULT NULL ON UPDATE current_timestamp(),
-  `is_deleted` tinyint(1) NOT NULL DEFAULT 0,
+  `regdate` datetime DEFAULT CURRENT_TIMESTAMP,
+  `moddate` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  `is_deleted` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`idx`) USING BTREE,
   KEY `idx_sample_idx` (`poke_sample_idx`),
   KEY `idx_parent_idx` (`parent_idx`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=316 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- 테이블 데이터 mcl_project.poke_sample_comment:~313 rows (대략적) 내보내기
 INSERT INTO `poke_sample_comment` (`idx`, `poke_sample_idx`, `member_idx`, `parent_idx`, `ment`, `regdate`, `moddate`, `is_deleted`) VALUES
@@ -1827,18 +1833,20 @@ INSERT INTO `poke_sample_comment` (`idx`, `poke_sample_idx`, `member_idx`, `pare
 	(310, 1, 9, NULL, '노력치 조정이 예술이네요.', '2025-11-28 02:53:59', NULL, 0),
 	(311, 1, 17, NULL, '이거 써봤는데 진짜 좋습니다.', '2025-11-28 02:53:59', NULL, 0),
 	(312, 1, 14, NULL, '파티 추천 좀 해주세요.', '2025-11-28 02:53:59', NULL, 0),
-	(313, 1, 18, NULL, '파티 추천 좀 해주세요.', '2025-11-28 02:53:59', NULL, 0);
+	(313, 1, 18, NULL, '파티 추천 좀 해주세요.', '2025-11-28 02:53:59', NULL, 0),
+	(314, 45, 32, NULL, '댓글', '2025-11-28 10:38:40', '2025-11-28 10:38:40', 0),
+	(315, 63, 32, NULL, '나는 공격에 252주는게 더 ㅈ좋다', '2025-11-28 10:41:05', '2025-11-28 10:41:05', 0);
 
 -- 테이블 mcl_project.poke_sample_like 구조 내보내기
 DROP TABLE IF EXISTS `poke_sample_like`;
 CREATE TABLE IF NOT EXISTS `poke_sample_like` (
-  `idx` int(11) NOT NULL AUTO_INCREMENT,
-  `sample_idx` int(11) NOT NULL DEFAULT 0 COMMENT '어떤 샘플 인지',
-  `member_idx` int(11) NOT NULL DEFAULT 0 COMMENT '누가 눌렀는지',
-  `regdate` datetime DEFAULT current_timestamp(),
+  `idx` int NOT NULL AUTO_INCREMENT,
+  `sample_idx` int NOT NULL DEFAULT '0' COMMENT '어떤 샘플 인지',
+  `member_idx` int NOT NULL DEFAULT '0' COMMENT '누가 눌렀는지',
+  `regdate` datetime DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`idx`) USING BTREE,
   UNIQUE KEY `uq_sample_member` (`sample_idx`,`member_idx`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=346 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- 테이블 데이터 mcl_project.poke_sample_like:~306 rows (대략적) 내보내기
 INSERT INTO `poke_sample_like` (`idx`, `sample_idx`, `member_idx`, `regdate`) VALUES
@@ -2147,7 +2155,8 @@ INSERT INTO `poke_sample_like` (`idx`, `sample_idx`, `member_idx`, `regdate`) VA
 	(340, 1, 26, '2025-11-28 02:53:59'),
 	(341, 1, 19, '2025-11-28 02:53:59'),
 	(342, 1, 13, '2025-11-28 02:53:59'),
-	(343, 1, 9, '2025-11-28 02:53:59');
+	(343, 1, 9, '2025-11-28 02:53:59'),
+	(345, 45, 32, '2025-11-28 10:38:53');
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;

@@ -4,6 +4,8 @@
 
 // 관리자 페이지 (유저 관리)
 
+// -------------------------------
+
 // // 날짜 기반 난수 생성기 (Seeded Random)
 //   const getDailyRandomIndex = (max: number) => {
 //     const date = new Date();
@@ -22,3 +24,9 @@
 //     const dailyIndex = getDailyRandomIndex(names.length);
 
 //     const randomName = names[dailyIndex];
+
+// -------------------------------
+
+// 토스트 사용중 : app.tsx , loginpage.tsx
+
+// 스위트 얼러트 : sidebar.tsx

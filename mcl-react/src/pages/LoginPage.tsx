@@ -5,6 +5,7 @@ import apiClient from "../api/apiClient";
 import { API_BASE_URL } from "../config/defaultconfig";
 import { useAuth } from "../context/AuthContext";
 import Header from "../components/layout/Header";
+import { toast } from "react-toastify";
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -35,6 +36,7 @@ const LoginPage: React.FC = () => {
 
       if (response.status === 200) {
         await refreshUser();
+        toast.success("로그인 성공");
         navigate("/");
       }
     } catch (error) {

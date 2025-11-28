@@ -7,6 +7,10 @@ import {
   NOTION_URL,
   PUBLIC_IMAGE_PATH,
 } from "../../config/defaultconfig";
+import Swal from "sweetalert2";
+import withReactContent from "sweetalert2-react-content";
+
+const MySwal = withReactContent(Swal);
 
 const DEFAULT_PROFILE_IMAGE =
   "https://placehold.co/100x100/dddddd/888888?text=P";
@@ -51,7 +55,25 @@ const Sidebar: React.FC = () => {
   // ⭐️ 로그아웃 버튼 클릭 핸들러
   const handleLogoutClick = (e: React.MouseEvent) => {
     e.preventDefault(); // href가 있으면 클릭 방지
-    logout(); // AuthContext의 logout 함수 호출
+
+    MySwal.fire({
+      title: <p>로그아웃 하시겠습니까?</p>,
+      html: (
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          <span style={{ color: "green", fontSize: "14px" }}>
+            확인을 누르면 로그아웃 됩니다.
+          </span>
+        </div>
+      ),
+      icon: "info",
+      showCancelButton: true,
+      confirmButtonText: "확인",
+      cancelButtonText: "취소",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        logout();
+      }
+    });
   };
 
   return (
